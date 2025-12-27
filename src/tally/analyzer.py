@@ -1617,119 +1617,72 @@ def write_summary_file(stats, filepath, year=2025, home_locations=None):
         .clickable .chevron {{ text-decoration: none !important; display: inline-block; }}
         .location-badge.clickable:hover {{ background: #3b82f6; }}
 
-        /* Legend/Help section - Modern redesign */
-        .legend {{
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+        /* Help/Guide section - Compact inline design */
+        .help-section {{
+            background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
+            border-radius: 12px;
             margin-bottom: 1.5rem;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
         }}
-        .legend-header {{
-            padding: 1rem 1.25rem;
+        .help-section-header {{
+            padding: 0.75rem 1rem;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, rgba(168,85,247,0.1) 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.2s ease;
+            transition: background 0.2s;
         }}
-        .legend-header:hover {{
-            background: linear-gradient(90deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.15) 100%);
+        .help-section-header:hover {{
+            background: rgba(255,255,255,0.03);
         }}
-        .legend-header h3 {{
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #e2e8f0;
+        .help-section-header h3 {{
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #888;
             margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }}
-        .legend-header .toggle {{
-            color: #a78bfa;
-            font-size: 0.75rem;
-            transition: transform 0.3s ease;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(167,139,250,0.2);
-            border-radius: 6px;
+        .help-section-header .toggle {{
+            color: #666;
+            font-size: 0.7rem;
+            transition: transform 0.2s;
         }}
-        .legend.collapsed .legend-header .toggle {{
+        .help-section.collapsed .help-section-header .toggle {{
             transform: rotate(-90deg);
         }}
-        .legend-content {{
-            padding: 1.5rem;
+        .help-section-content {{
+            padding: 0.75rem 1rem 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: auto 1fr;
+            gap: 0.4rem 1rem;
+            font-size: 0.75rem;
+            color: #888;
+            align-items: baseline;
         }}
-        .legend.collapsed .legend-content {{
+        .help-section.collapsed .help-section-content {{
             display: none;
         }}
-        .legend-section {{
-            background: rgba(255,255,255,0.02);
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            border: 1px solid rgba(255,255,255,0.05);
+        .help-section-content .label {{
+            color: #666;
+            font-weight: 500;
+            white-space: nowrap;
         }}
-        .legend-section h4 {{
+        .help-section-content .value {{
+            line-height: 1.5;
+        }}
+        .help-section-content .badge {{
+            margin-right: 0.15rem;
+        }}
+        .help-section-content code {{
+            background: rgba(255,255,255,0.08);
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
             font-size: 0.7rem;
-            text-transform: uppercase;
-            color: #94a3b8;
-            margin-bottom: 0.75rem;
-            letter-spacing: 1px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            color: #4facfe;
         }}
-        .legend-section h4::before {{
-            content: '';
-            width: 3px;
-            height: 12px;
-            background: linear-gradient(180deg, #6366f1, #a855f7);
-            border-radius: 2px;
-        }}
-        .legend-item {{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 0;
-            font-size: 0.8rem;
-            color: #cbd5e1;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-        }}
-        .legend-item:last-child {{
-            border-bottom: none;
-            padding-bottom: 0;
-        }}
-        .legend-item:first-of-type {{
-            padding-top: 0;
-        }}
-        .legend-item .badge {{
-            flex-shrink: 0;
-        }}
-        .legend-item code {{
-            background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            color: #a78bfa;
+        .help-section-content strong {{
+            color: #aaa;
             font-weight: 500;
-            border: 1px solid rgba(167,139,250,0.2);
-        }}
-        .legend-item strong {{
-            color: #e2e8f0;
-            font-weight: 500;
-        }}
-        .legend-item .desc {{
-            color: #94a3b8;
         }}
     </style>
 </head>
@@ -1737,7 +1690,7 @@ def write_summary_file(stats, filepath, year=2025, home_locations=None):
     <div class="container">
         <header>
             <h1>{year} Spending Analysis</h1>
-            <p class="subtitle">Generated {datetime.now().strftime('%B %d, %Y at %I:%M %p')} • Occurrence-Based Classification</p>
+            <p class="subtitle">Generated {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
         </header>
         <div class="search-box">
             <div class="autocomplete-container">
@@ -1747,56 +1700,18 @@ def write_summary_file(stats, filepath, year=2025, home_locations=None):
             <div id="filterChips" class="filter-chips"></div>
         </div>
 
-        <div class="legend collapsed" id="legend">
-            <div class="legend-header" onclick="document.getElementById('legend').classList.toggle('collapsed')">
+        <div class="help-section collapsed" id="helpSection">
+            <div class="help-section-header" onclick="document.getElementById('helpSection').classList.toggle('collapsed')">
                 <h3>📊 How to Read This Report</h3>
                 <span class="toggle">▼</span>
             </div>
-            <div class="legend-content">
-                <div class="legend-section">
-                    <h4>Calculation Types</h4>
-                    <div class="legend-item">
-                        <span class="badge avg">avg</span>
-                        <span><strong>Average</strong> <span class="desc">— Best for consistent payments like Netflix</span></span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="badge div">/12</span>
-                        <span><strong>YTD ÷ 12</strong> <span class="desc">— Best for varying amounts like tuition</span></span>
-                    </div>
-                </div>
-                <div class="legend-section">
-                    <h4>Spending Categories</h4>
-                    <div class="legend-item">
-                        <span><strong>Monthly Recurring</strong> <span class="desc">— 6+ months, consistent amounts</span></span>
-                    </div>
-                    <div class="legend-item">
-                        <span><strong>Annual Bills</strong> <span class="desc">— Once-a-year (insurance, subscriptions)</span></span>
-                    </div>
-                    <div class="legend-item">
-                        <span><strong>Periodic</strong> <span class="desc">— Regular but not monthly (quarterly)</span></span>
-                    </div>
-                    <div class="legend-item">
-                        <span><strong>Travel</strong> <span class="desc">— Spending outside home location</span></span>
-                    </div>
-                    <div class="legend-item">
-                        <span><strong>Variable</strong> <span class="desc">— Day-to-day discretionary spending</span></span>
-                    </div>
-                </div>
-                <div class="legend-section">
-                    <h4>Key Terms</h4>
-                    <div class="legend-item">
-                        <code>YTD</code>
-                        <span class="desc">Year-to-date total</span>
-                    </div>
-                    <div class="legend-item">
-                        <code>/mo</code>
-                        <span class="desc">Monthly equivalent</span>
-                    </div>
-                    <div class="legend-item">
-                        <code>Months</code>
-                        <span class="desc">Months with transactions</span>
-                    </div>
-                </div>
+            <div class="help-section-content">
+                <span class="label">Calculation:</span>
+                <span class="value"><span class="badge avg">avg</span> average when active (consistent monthly payments) · <span class="badge div">/12</span> YTD ÷ 12 (irregular payment amounts)</span>
+                <span class="label">Terms:</span>
+                <span class="value"><code>YTD</code> year-to-date total · <code>/mo</code> monthly cost · <code>Months</code> months with transactions</span>
+                <span class="label">Categories:</span>
+                <span class="value"><strong>Monthly Recurring</strong> (6+ months) · <strong>Annual</strong> (once-a-year) · <strong>Periodic</strong> (quarterly) · <strong>Travel</strong> · <strong>One-Off</strong> · <strong>Variable</strong> (discretionary)</span>
             </div>
         </div>
 
