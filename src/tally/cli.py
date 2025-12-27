@@ -1792,9 +1792,8 @@ Examples:
     elif args.command == 'diag':
         cmd_diag(args)
     elif args.command == 'version':
-        print(BANNER)
         sha_display = GIT_SHA[:8] if GIT_SHA != 'unknown' else 'unknown'
-        print(f"  v{VERSION} ({sha_display})")
+        print(f"tally {VERSION} ({sha_display})")
 
 
 if __name__ == '__main__':
