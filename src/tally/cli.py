@@ -12,7 +12,10 @@ import argparse
 import os
 import sys
 
-from ._version import VERSION, GIT_SHA, REPO_URL, check_for_updates
+from ._version import (
+    VERSION, GIT_SHA, REPO_URL, check_for_updates,
+    get_latest_release_info, perform_update
+)
 from .config_loader import load_config
 
 BANNER = r'''
@@ -1629,6 +1632,96 @@ def cmd_diag(args):
         print(json_module.dumps(output, indent=2))
 
 
+def cmd_update(args):
+    """Handle the update command."""
+    print("Checking for updates...")
+
+    # Get release info
+    release_info = get_latest_release_info()
+    if not release_info:
+        print("Error: Could not fetch release information from GitHub.")
+        sys.exit(1)
+
+    latest = release_info['version']
+    current = VERSION
+
+    # Show version comparison
+    from ._version import _version_greater
+    has_update = _version_greater(latest, current)
+
+    if has_update:
+        print(f"New version available: v{latest} (current: v{current})")
+    else:
+        print(f"Already on latest version: v{current}")
+
+    # If --check only, just show status and exit
+    if args.check:
+        if has_update:
+            print(f"\nRun 'tally update' to install the update.")
+        sys.exit(0)
+
+    # Handle --assets flag (update AGENTS.md and CLAUDE.md)
+    if args.assets:
+        update_assets(args.yes)
+
+    # Skip binary update if no update available
+    if not has_update:
+        if not args.assets:
+            print("\nNothing to update.")
+        sys.exit(0)
+
+    # Check if running from source (can't self-update)
+    import sys as _sys
+    if not getattr(_sys, 'frozen', False):
+        if args.assets:
+            # Already updated assets, just note that binary update isn't possible from source
+            print("\nNote: Binary self-update not available when running from source.")
+        else:
+            print(f"\n✗ Cannot self-update when running from source. Use: uv pip install --upgrade tally")
+            sys.exit(1)
+        sys.exit(0)
+
+    # Perform binary update
+    print()
+    success, message = perform_update(release_info)
+
+    if success:
+        print(f"\n✓ {message}")
+        print("\nRestart tally to use the new version.")
+    else:
+        print(f"\n✗ {message}")
+        sys.exit(1)
+
+
+def update_assets(skip_confirm: bool = False):
+    """Update AGENTS.md and CLAUDE.md in current directory."""
+    from pathlib import Path
+
+    target_dir = Path.cwd()
+    assets = [
+        ('AGENTS.md', STARTER_AGENTS_MD),
+        ('CLAUDE.md', STARTER_CLAUDE_MD),
+    ]
+
+    print("\nUpdating assets in current directory...")
+
+    for filename, content in assets:
+        path = target_dir / filename
+        if path.exists() and not skip_confirm:
+            print(f"\nWarning: {filename} exists and will be overwritten.")
+            try:
+                confirm = input("Continue? [y/N]: ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                print("\nCancelled.")
+                return
+            if confirm != 'y':
+                print(f"Skipping {filename}")
+                continue
+
+        path.write_text(content)
+        print(f"✓ Updated {filename}")
+
+
 def main():
     """Main entry point for tally CLI."""
     parser = argparse.ArgumentParser(
@@ -1647,6 +1740,9 @@ Examples:
   tally discover --format json  JSON output for agents
   tally diag                  Show diagnostic info about rules
   tally diag --format json    JSON output for agents
+  tally update               Update tally to latest version
+  tally update --check       Check for updates without installing
+  tally update --assets      Update AGENTS.md and CLAUDE.md
 '''
     )
 
@@ -1774,6 +1870,28 @@ Examples:
         description='Display tally version and build information.'
     )
 
+    # update subcommand
+    update_parser = subparsers.add_parser(
+        'update',
+        help='Update tally to the latest version',
+        description='Download and install the latest tally release, optionally update assets.'
+    )
+    update_parser.add_argument(
+        '--check',
+        action='store_true',
+        help='Check for updates without installing'
+    )
+    update_parser.add_argument(
+        '--assets',
+        action='store_true',
+        help='Update AGENTS.md and CLAUDE.md in current directory (will prompt before overwriting)'
+    )
+    update_parser.add_argument(
+        '-y', '--yes',
+        action='store_true',
+        help='Skip confirmation prompts for asset updates'
+    )
+
     args = parser.parse_args()
 
     # If no command specified, show help with banner
@@ -1812,6 +1930,8 @@ Examples:
             print()
             print(f"Update available: {update_info['latest_version']}")
             print(f"  {update_info['release_url']}")
+    elif args.command == 'update':
+        cmd_update(args)
 
 
 if __name__ == '__main__':

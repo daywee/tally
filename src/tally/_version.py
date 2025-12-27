@@ -66,3 +66,242 @@ def _version_greater(v1: str, v2: str) -> bool:
         return parse_version(v1) > parse_version(v2)
     except (ValueError, IndexError):
         return False
+
+
+def get_platform_asset_name() -> str:
+    """Return the release asset name for the current platform."""
+    import platform as plat
+
+    system = plat.system().lower()
+    if system == 'darwin':
+        return 'tally-macos-amd64.zip'
+    elif system == 'linux':
+        return 'tally-linux-amd64.zip'
+    elif system == 'windows':
+        return 'tally-windows-amd64.zip'
+    else:
+        raise RuntimeError(f"Unsupported platform: {system}")
+
+
+def get_latest_release_info(timeout: float = 10.0) -> dict | None:
+    """Get latest release info including download URLs.
+
+    Returns dict with 'version', 'assets' (dict of name -> url), 'release_url',
+    or None if request fails.
+    """
+    import urllib.request
+    import json
+
+    try:
+        parts = REPO_URL.rstrip('/').split('/')
+        if len(parts) < 2:
+            return None
+        owner, repo = parts[-2], parts[-1]
+
+        api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
+
+        req = urllib.request.Request(
+            api_url,
+            headers={
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': f'tally/{VERSION}'
+            }
+        )
+
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            data = json.loads(response.read().decode('utf-8'))
+
+            assets = {}
+            for asset in data.get('assets', []):
+                assets[asset['name']] = asset['browser_download_url']
+
+            return {
+                'version': data.get('tag_name', '').lstrip('v'),
+                'assets': assets,
+                'release_url': data.get('html_url', f'{REPO_URL}/releases/latest')
+            }
+    except Exception:
+        return None
+
+
+def download_file(url: str, dest_path: str, show_progress: bool = True) -> bool:
+    """Download a file from URL to destination path.
+
+    Returns True on success, False on failure.
+    """
+    import urllib.request
+    import shutil
+
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={'User-Agent': f'tally/{VERSION}'}
+        )
+
+        with urllib.request.urlopen(req, timeout=60) as response:
+            total_size = response.headers.get('Content-Length')
+            if total_size:
+                total_size = int(total_size)
+
+            with open(dest_path, 'wb') as f:
+                downloaded = 0
+                block_size = 8192
+
+                while True:
+                    chunk = response.read(block_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    downloaded += len(chunk)
+
+                    if show_progress and total_size:
+                        pct = (downloaded / total_size) * 100
+                        print(f"\rDownloading... {pct:.0f}%", end='', flush=True)
+
+                if show_progress:
+                    print()  # newline after progress
+
+        return True
+    except Exception as e:
+        print(f"Download failed: {e}")
+        return False
+
+
+def get_executable_path():
+    """Get the path to the currently running tally executable.
+
+    Returns Path object or None if not running as frozen executable.
+    """
+    import sys
+    from pathlib import Path
+
+    # Check if running as PyInstaller frozen executable
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable)
+
+    return None
+
+
+def get_install_path():
+    """Get the expected installation path for tally.
+
+    Returns Path object for the install location based on platform.
+    """
+    import platform as plat
+    from pathlib import Path
+    import os
+
+    system = plat.system().lower()
+
+    if system == 'windows':
+        local_app_data = os.environ.get('LOCALAPPDATA', '')
+        if local_app_data:
+            return Path(local_app_data) / 'tally' / 'tally.exe'
+    else:  # macOS, Linux
+        home = Path.home()
+        return home / '.tally' / 'bin' / 'tally'
+
+    return None
+
+
+def perform_update(release_info: dict, force: bool = False) -> tuple[bool, str]:
+    """Perform the actual binary update.
+
+    Args:
+        release_info: Dict from get_latest_release_info()
+        force: If True, update even if already on latest version
+
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    import tempfile
+    import zipfile
+    import shutil
+    import stat
+    import platform as plat
+    from pathlib import Path
+
+    # Check if update is needed
+    if not force and not _version_greater(release_info['version'], VERSION):
+        return True, f"Already on latest version: {VERSION}"
+
+    # Get platform-specific asset
+    try:
+        asset_name = get_platform_asset_name()
+    except RuntimeError as e:
+        return False, str(e)
+
+    if asset_name not in release_info['assets']:
+        return False, f"No release asset found for this platform: {asset_name}"
+
+    download_url = release_info['assets'][asset_name]
+
+    # Determine install path
+    install_path = get_executable_path() or get_install_path()
+    if not install_path:
+        return False, "Could not determine installation path"
+
+    install_path = Path(install_path)
+
+    # Check if running from source (not frozen)
+    if not getattr(__import__('sys'), 'frozen', False):
+        return False, "Cannot self-update when running from source. Use: uv pip install --upgrade tally"
+
+    system = plat.system().lower()
+    binary_name = 'tally.exe' if system == 'windows' else 'tally'
+
+    try:
+        # Create temp directory for download
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            zip_path = temp_path / asset_name
+
+            # Download
+            print(f"Downloading {asset_name}...")
+            if not download_file(download_url, str(zip_path)):
+                return False, "Download failed"
+
+            # Extract
+            print("Extracting...")
+            with zipfile.ZipFile(zip_path, 'r') as zf:
+                zf.extractall(temp_path)
+
+            new_binary = temp_path / binary_name
+            if not new_binary.exists():
+                return False, f"Expected binary not found in archive: {binary_name}"
+
+            # Make executable on Unix
+            if system != 'windows':
+                new_binary.chmod(new_binary.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+            # Ensure install directory exists
+            install_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Backup existing binary
+            backup_path = install_path.with_suffix('.bak' if system != 'windows' else '.exe.bak')
+            if install_path.exists():
+                print("Backing up current binary...")
+                shutil.copy2(install_path, backup_path)
+
+            # Replace binary
+            print("Installing new version...")
+            if system == 'windows':
+                # On Windows, rename current (can't delete running exe) then copy new
+                if install_path.exists():
+                    old_path = install_path.with_name('tally.old.exe')
+                    try:
+                        old_path.unlink(missing_ok=True)
+                    except:
+                        pass
+                    install_path.rename(old_path)
+                shutil.copy2(new_binary, install_path)
+            else:
+                # On Unix, atomic rename
+                shutil.copy2(new_binary, install_path)
+
+            return True, f"Updated to v{release_info['version']}"
+
+    except PermissionError:
+        return False, f"Permission denied. Try running with elevated privileges or manually update at: {install_path}"
+    except Exception as e:
+        return False, f"Update failed: {e}"

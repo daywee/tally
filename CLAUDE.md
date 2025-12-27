@@ -7,6 +7,13 @@ This file provides guidance for Claude when working on this codebase.
 - **Always add tests** for new features in the analyzer. Tests go in `tests/test_analyzer.py`.
 - **Always use the Playwright MCP** to test any changes to the HTML report. Generate a report with test data and verify the UI works correctly.
 
+## Development
+
+- **Always use `uv run`** to run tally during development. Example:
+  ```bash
+  uv run python -m tally --help
+  ```
+
 ## Releases
 
 - **Always use the GitHub workflow** for releasing new versions. Do not create releases manually.
