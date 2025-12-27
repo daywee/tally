@@ -1653,7 +1653,7 @@ Examples:
     # init subcommand
     init_parser = subparsers.add_parser(
         'init',
-        help='Create a new budget directory with starter config files',
+        help='Set up a new budget folder with config files (run once to get started)',
         description='Initialize a new budget directory with settings, merchant categories, and documentation.'
     )
     init_parser.add_argument(
@@ -1666,7 +1666,7 @@ Examples:
     # run subcommand
     run_parser = subparsers.add_parser(
         'run',
-        help='Analyze transactions and generate spending report',
+        help='Parse transactions, categorize them, and generate HTML spending report',
         description='Run the budget analyzer on your transaction data.'
     )
     run_parser.add_argument(
@@ -1697,7 +1697,7 @@ Examples:
     # inspect subcommand
     inspect_parser = subparsers.add_parser(
         'inspect',
-        help='Inspect a CSV file to determine column structure',
+        help='Show CSV columns and sample data to help build a format string',
         description='Show headers and sample rows from a CSV file, with auto-detection suggestions.'
     )
     inspect_parser.add_argument(
@@ -1715,7 +1715,7 @@ Examples:
     # discover subcommand
     discover_parser = subparsers.add_parser(
         'discover',
-        help='Find unknown merchants and suggest categorization rules',
+        help='List uncategorized transactions with suggested patterns (use --format json for LLMs)',
         description='Analyze transactions to find unknown merchants, sorted by spend. '
                     'Outputs suggested patterns for merchant_categories.csv.'
     )
@@ -1745,7 +1745,7 @@ Examples:
     # diag subcommand
     diag_parser = subparsers.add_parser(
         'diag',
-        help='Show diagnostic information about configuration and rules',
+        help='Debug config issues: show loaded rules, data sources, and errors',
         description='Display detailed diagnostic info to help troubleshoot rule loading issues.'
     )
     diag_parser.add_argument(
