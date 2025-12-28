@@ -1,6 +1,7 @@
 name: Test Install Scripts
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'docs/install.sh'
