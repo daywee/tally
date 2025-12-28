@@ -29,6 +29,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run install script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash docs/install.sh
 
       - name: Verify installation
@@ -45,6 +47,8 @@ jobs:
 
       - name: Run install script
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           & ./docs/install.ps1
 

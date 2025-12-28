@@ -38,7 +38,11 @@ detect_arch() {
 
 # Get latest release version
 get_latest_version() {
-    curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" |
+    local auth_header=""
+    if [ -n "$GITHUB_TOKEN" ]; then
+        auth_header="Authorization: token $GITHUB_TOKEN"
+    fi
+    curl -fsSL ${auth_header:+-H "$auth_header"} "https://api.github.com/repos/${REPO}/releases/latest" |
         grep '"tag_name":' |
         sed -E 's/.*"([^"]+)".*/\1/'
 }

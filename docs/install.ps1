@@ -14,7 +14,11 @@ Write-Info "Installing tally..."
 
 # Get latest version
 try {
-    $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
+    $Headers = @{}
+    if ($env:GITHUB_TOKEN) {
+        $Headers["Authorization"] = "token $env:GITHUB_TOKEN"
+    }
+    $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers $Headers
     $Version = $Release.tag_name
     Write-Info "Latest version: $Version"
 } catch {
