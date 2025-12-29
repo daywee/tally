@@ -1051,7 +1051,7 @@ def migrate_v0_to_v1(old_config_dir, skip_confirm=False):
 
         # Move config directory
         new_config = os.path.join(tally_dir, 'config')
-        print(f"  Moving config/ → tally/config/")
+        print(f"  Moving config/ -> tally/config/")
         shutil.move(old_config_dir, new_config)
 
         # Move data and output directories if they exist
@@ -1059,7 +1059,7 @@ def migrate_v0_to_v1(old_config_dir, skip_confirm=False):
             old_path = os.path.abspath(subdir)
             if os.path.isdir(old_path):
                 new_path = os.path.join(tally_dir, subdir)
-                print(f"  Moving {subdir}/ → tally/{subdir}/")
+                print(f"  Moving {subdir}/ -> tally/{subdir}/")
                 shutil.move(old_path, new_path)
 
         # Write schema version marker
@@ -2299,7 +2299,7 @@ def _print_merchant_explanation(name, data, output_format, verbose, num_months):
         # Text format
         classification = data.get('classification', 'unknown').replace('_', ' ').title()
         reasoning = data.get('reasoning', {})
-        print(f"{name} → {classification}")
+        print(f"{name} -> {classification}")
         print(f"  {reasoning.get('decision', 'N/A')}")
 
         if verbose >= 1:
