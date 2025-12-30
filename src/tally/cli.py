@@ -484,10 +484,10 @@ def cmd_init(args):
 
     # Check which agents are installed
     agents = [
-        ('claude', 'Claude Code', 'https://claude.ai/download'),
-        ('copilot', 'GitHub Copilot', 'https://docs.github.com/en/copilot'),
-        ('aider', 'Aider', 'https://aider.chat'),
-        ('codex', 'Codex CLI', 'https://github.com/openai/codex'),
+        ('claude', 'Claude Code', 'https://claude.com/product/claude-code'),
+        ('copilot', 'GitHub Copilot', 'https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli'),
+        ('opencode', 'OpenCode', 'https://opencode.ai'),
+        ('codex', 'OpenAI Codex', 'https://developers.openai.com/codex/cli'),
     ]
 
     agent_lines = []
