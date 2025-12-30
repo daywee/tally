@@ -1989,7 +1989,7 @@ def main():
     update_parser = subparsers.add_parser(
         'update',
         help='Update tally to the latest version',
-        description='Download and install the latest tally release, optionally update assets.'
+        description='Download and install the latest tally release.'
     )
     update_parser.add_argument(
         '--check',
