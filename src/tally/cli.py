@@ -207,796 +207,47 @@ Pattern,Merchant,Category,Subcategory
 
 '''
 
-STARTER_AGENTS_MD = '''# Tally - Agent Instructions
+STARTER_AGENTS_MD = '''# Tally - Budget Analyzer
 
-This document provides instructions for AI agents working with Tally.
+Run `tally workflow` to see context-aware instructions for your current state.
 
-## Quick Reference
-
-```bash
-# Show help
-tally
-
-# Initialize a new budget directory (current dir or specified)
-tally init
-tally init ./my-budget
-
-# Run analysis (uses ./config by default)
-tally run
-tally run ./path/to/config
-
-# Output formats for programmatic analysis
-tally run --format json           # JSON output with classification reasoning
-tally run --format markdown       # Markdown report
-tally run --format json -v        # JSON with decision trace
-tally run --format json -vv       # JSON with full details (thresholds, CV)
-
-# Filter output
-tally run --format json --only monthly,variable    # Just these classifications
-tally run --format json --category Food            # Just Food category merchants
-
-# Explain why merchants are classified the way they are
-tally explain                     # Overview of all classifications
-tally explain Netflix             # Explain specific merchant
-tally explain Netflix -v          # With decision trace
-tally explain -c monthly          # Explain all monthly merchants
-tally explain --category Food     # Explain all Food category merchants
-tally explain --tags business     # Explain all business-tagged merchants
-
-# View summary only (find uncategorized transactions)
-tally run --summary
-
-# Inspect a CSV file to see its structure and get format suggestions
-tally inspect path/to/file.csv
-
-# Discover unknown merchants and get suggested rules
-tally discover                    # Human-readable output
-tally discover --format csv       # CSV output for import
-tally discover --format json      # JSON output for programmatic use
-tally discover --limit 50         # Show top 50 by spend
-
-# Diagnose configuration issues
-tally diag                        # Show config, data sources, format parsing
-```
-
-## Understanding Classifications
-
-Tally classifies merchants into these categories based on occurrence patterns:
-
-| Classification | Criteria | Example |
-|----------------|----------|---------|
-| Monthly | Bills/Utilities/Subscriptions appearing 50%+ of months | Netflix, Electric Bill |
-| Annual | Bill-type categories with 1-2 charges per year | Annual insurance premium |
-| Periodic | Recurring but non-monthly (tuition, quarterly payments) | School tuition |
-| Travel | Travel category or international location | Airlines, Hotels abroad |
-| One-Off | High-value infrequent (>$1000, ≤3 months) | Home improvement, Electronics |
-| Variable | Everything else (discretionary) | Restaurants, Shopping |
-
-Use `tally explain` to understand why a specific merchant is classified:
+## Quick Start
 
 ```bash
-tally explain Netflix -v          # See the decision trace
-tally explain Netflix -vv         # Full details + which rule matched
-tally explain --classification variable  # Why is something variable?
+tally workflow    # See what to do next based on current state
+tally --help      # See all available commands
 ```
 
-### Example: tally explain -vv Output
-
-```
-Netflix → Monthly
-  Monthly: Subscriptions appears 6/6 months (50% threshold = 3)
-
-  Decision trace:
-    ✗ NOT excluded: Subscriptions not in [Transfers, Cash, Income]
-    ✗ NOT travel: category=Subscriptions
-    ✗ NOT annual: (Subscriptions, Streaming) not in annual categories
-    ✗ NOT periodic: no periodic patterns matched
-    ✓ IS monthly: Subscriptions with 6/6 months (>= 3 bill threshold)
-
-  Calculation: avg (CV=0.00 (<0.3), payments are consistent)
-    Formula: avg_when_active = 95.94 / 6 months = 15.99
-    CV: 0.00
-
-  Rule: NETFLIX.* (user)
-```
-
-The `Rule:` line shows:
-- The pattern that matched (e.g., `NETFLIX.*`)
-- The source: `user` (from merchant_categories.csv)
-
-## Troubleshooting
-
-When something isn't working, use `tally diag` to inspect:
-- Configuration file location and status
-- Data source format parsing (columns, custom captures, templates)
-- Merchant rules (user-defined)
-
-## Your Tasks
-
-When working with this budget analyzer, you may be asked to:
-
-1. **Set up a new budget directory** - Use `tally init`
-2. **Add merchant categorization rules** - Edit `config/merchant_categories.csv`
-3. **Configure data sources** - Edit `config/settings.yaml`
-4. **Analyze and fix uncategorized transactions** - Run with `--summary`, then add rules
-5. **Debug configuration issues** - Use `tally diag`
-6. **Analyze spending patterns** - Use `tally run --format json` for structured data
-7. **Explain classifications** - Use `tally explain <merchant>` to understand why
-8. **Answer "why" questions** - Use `tally explain -v` for decision traces
-
-## Understanding merchant_categories.csv
-
-This is the main file you'll edit. Each row maps a transaction pattern to a category.
-
-**Format:** `Pattern,Merchant,Category,Subcategory,Tags`
-
-- **Pattern** is a Python regex (case-insensitive) matched against transaction descriptions
-- **Tags** (optional) are pipe-separated labels for filtering, e.g., `business|reimbursable`
-
-### Tags
-
-Tags let you add custom labels to merchants for filtering:
-
-```csv
-Pattern,Merchant,Category,Subcategory,Tags
-UBER\\s(?!EATS),Uber,Transport,Rideshare,business|reimbursable
-NETFLIX,Netflix,Subscriptions,Streaming,entertainment|recurring
-GITHUB,GitHub,Subscriptions,Software,business|recurring
-WHOLEFDS,Whole Foods,Food,Grocery,
-```
-
-**Common tag use cases:**
-- `business` - Business expenses
-- `reimbursable` - Will be reimbursed by employer
-- `entertainment` - Personal entertainment
-- `recurring` - Auto-renews monthly/yearly
-- `tax-deductible` - Tax-related expenses
-
-**Filtering by tags:**
-```bash
-tally explain --tags business              # Show all business-tagged merchants
-tally explain --tags business,reimbursable # Show merchants with either tag
-```
-
-**In the HTML UI:**
-- Tags appear as badges in the Tags column
-- Click a tag badge to filter by that tag
-- Type `t:business` in search to filter
-
-### Pattern Examples
-
-| Pattern | What it matches | Use case |
-|---------|-----------------|----------|
-| `NETFLIX` | Contains "NETFLIX" | Simple substring |
-| `STARBUCKS` | Contains "STARBUCKS" | Simple substring |
-| `DELTA\\|SOUTHWEST` | "DELTA" OR "SOUTHWEST" | Multiple variations |
-| `WHOLE FOODS\\|WHOLEFDS` | Either spelling | Handle abbreviations |
-| `UBER\\s(?!EATS)` | "UBER " NOT followed by "EATS" | Exclude Uber Eats from rideshare |
-| `COSTCO(?!.*GAS)` | "COSTCO" without "GAS" | Exclude gas station |
-| `APPLE\\.COM(?!/BILL)` | Apple.com but not /BILL | Exclude subscriptions |
-| `^ATT\\s` | Starts with "ATT " | Avoid matching "SEATTLE" |
-| `CHICK.FIL.A` | CHICK-FIL-A or CHICKFILA | `.` matches any char |
-
-### Inline Modifiers (Target Specific Transactions)
-
-Add conditions to patterns to match on amount or date:
-
-```csv
-# Amount modifiers
-COSTCO[amount>200],Costco Bulk,Shopping,Bulk
-STARBUCKS[amount<10],Quick Coffee,Food,Coffee
-BESTBUY[amount=499.99],TV Purchase,Shopping,Electronics
-RESTAURANT[amount:20-100],Dining Out,Food,Restaurant
-
-# Date modifiers
-COSTCO[date=2025-01-15],Costco Jan 15,Shopping,Grocery
-SUBSCRIPTION[date:2025-01-01..2025-06-30],H1 Subscription,Bills,Subscription
-PURCHASE[date:last30days],Recent Purchase,Shopping,Retail
-HOLIDAY[month=12],December Shopping,Shopping,Gifts
-
-# Combined (AND logic)
-COSTCO(?!GAS)[amount>200][date=2025-01-15],Specific Costco Trip,Shopping,Bulk
-```
-
-**Amount modifiers:**
-- `[amount>100]` - Greater than $100
-- `[amount>=100]` - Greater than or equal to $100
-- `[amount<50]` - Less than $50
-- `[amount<=50]` - Less than or equal to $50
-- `[amount=99.99]` - Exactly $99.99
-- `[amount:50-200]` - Between $50 and $200 (inclusive)
-
-**Date modifiers:**
-- `[date=2025-01-15]` - Exact date (YYYY-MM-DD format)
-- `[date:2025-01-01..2025-01-31]` - Date range (inclusive)
-- `[date:last30days]` - Within last N days
-- `[month=12]` - Any transaction in December (any year)
-
-Use modifiers to express rules like *"that $500 Best Buy purchase was a gift"* or *"Costco purchases over $200 are bulk shopping"*.
-
-### Adding New Rules
-
-1. Look at the raw transaction description from the bank statement
-2. Find a unique substring or pattern that identifies the merchant
-3. Add a row: `PATTERN,Clean Name,Category,Subcategory`
-
-**Example:** If you see `"WHOLEFDS MKT 10847"` in a statement:
-```csv
-WHOLEFDS,Whole Foods,Food,Grocery
-```
-
-### Rule Order Matters
-
-Rules are matched top-to-bottom. Put specific rules before general ones:
-
-```csv
-# Specific first
-UBER\\s*EATS,Uber Eats,Food,Delivery
-# General second
-UBER,Uber,Transport,Rideshare
-```
-
-### Standard Categories
-
-Use these categories for consistency:
-
-| Category | Subcategories |
-|----------|---------------|
-| Food | Grocery, Restaurant, Fast Food, Fast Casual, Coffee, Delivery, Bakery |
-| Shopping | Online, Retail, Clothing, Electronics, Home, Kids, Beauty, Books |
-| Travel | Airline, Lodging, Car Rental, Agency |
-| Transport | Rideshare, Gas, Parking, Tolls, Auto Service |
-| Subscriptions | Streaming, Software, News |
-| Health | Gym, Pharmacy, Medical, Vision, Fitness |
-| Utilities | Mobile, Internet/TV, Electric, Water |
-| Entertainment | Movies, Events, Activities, Attractions |
-| Transfers | P2P, CC Payment, Investment, Transfer |
-| Bills | Mortgage, Insurance, Tax |
-| Personal | Childcare, Grooming, Spa |
-| Cash | ATM, Check |
-
-## Workflow: Adding Rules for Uncategorized Transactions
-
-### Method 1: Using the discover command (Recommended for agents)
-
-1. Run discover to find unknown merchants sorted by spend:
-   ```bash
-   tally discover --format json
-   ```
-
-2. The output includes:
-   - `raw_description`: The original transaction description
-   - `suggested_pattern`: A regex pattern to match it
-   - `suggested_merchant`: A clean merchant name
-   - `count`: Number of transactions
-   - `total_spend`: Total amount spent
-
-3. For each unknown merchant:
-   - Review the suggested pattern and merchant name
-   - Determine the appropriate Category and Subcategory
-   - Add to `merchant_categories.csv`
-
-4. Re-run to verify:
-   ```bash
-   tally run --summary
-   ```
-
-### Method 2: Manual inspection
-
-1. Run analysis to find unknown merchants:
-   ```bash
-   tally run --summary
-   ```
-
-2. Look for transactions categorized as "Unknown"
-
-3. For each unknown merchant:
-   - Find the raw description in the statement file
-   - Create a pattern that uniquely matches it
-   - Add to `merchant_categories.csv`
-
-4. Re-run to verify categorization
-
-## Using discover for Bulk Rule Creation
-
-The discover command is designed to help agents efficiently create rules:
-
-```bash
-# Get JSON output for programmatic processing
-tally discover --format json --limit 0
-
-# Get CSV output ready for import (just needs categories filled in)
-tally discover --format csv
-```
-
-### JSON Output Structure
-
-```json
-[
-  {
-    "raw_description": "STARBUCKS STORE 12345 SEATTLE WA",
-    "suggested_pattern": "STARBUCKS\\s*STORE",
-    "suggested_merchant": "Starbucks Store",
-    "count": 15,
-    "total_spend": 87.50,
-    "examples": [
-      {"date": "2025-01-15", "amount": -5.50, "description": "Starbucks Store"}
-    ]
-  }
-]
-```
-
-### Workflow for Agents
-
-1. Run `tally discover --format json --limit 0`
-2. Parse the JSON output
-3. For each unknown merchant:
-   - Use `suggested_pattern` as starting point (may need refinement)
-   - Use `suggested_merchant` as the merchant name
-   - Determine Category/Subcategory based on merchant type
-4. Append rules to `config/merchant_categories.csv`
-5. Run `tally run --summary` to verify improvement
-6. Repeat until Unknown transactions are minimized
-
-## File Locations
-
-```
-my-budget/
-├── config/
-│   ├── settings.yaml           # Data sources, year, output settings
-│   └── merchant_categories.csv # Pattern → Category rules (EDIT THIS)
-├── data/                       # Bank/CC statement exports
-└── output/                     # Generated reports
-```
-
-## Travel Detection
-
-International transactions are automatically classified as travel.
-Domestic out-of-state transactions are NOT auto-travel (opt-in via merchant rules).
-
-To mark domestic locations as travel, add patterns to merchant_categories.csv:
-```csv
-.*\\sHI$,Hawaii Trip,Travel,Hawaii
-.*\\sCA$,California Trip,Travel,California
-```
-
-Configure home in settings.yaml:
-```yaml
-# Optional: specify home locations (for international exclusions)
-home_locations:
-  - WA
-
-# Optional: pretty names for travel destinations
-travel_labels:
-  HI: Hawaii
-  GB: United Kingdom
-
-# Optional: currency display format (default: ${amount})
-currency_format: "€{amount}"      # Euro prefix: €1,234
-# currency_format: "{amount} zł"  # Polish złoty suffix: 1,234 zł
-# currency_format: "£{amount}"    # British pound prefix: £1,234
-```
-
-If `home_locations` is not specified, it's auto-detected from your most common transaction location.
-
-## Statement Formats and Custom Parsing
-
-The tool supports three ways to parse CSV files:
-
-### 1. Predefined Types (backward compatible)
-```yaml
-data_sources:
-  - name: AMEX
-    file: data/amex.csv
-    type: amex      # Expects Date,Description,Amount columns
-  - name: BOA
-    file: data/boa.txt
-    type: boa       # Expects "MM/DD/YYYY Description Amount Balance" lines
-```
-
-### 2. Custom Format Strings (for any CSV)
-Use a format string to specify column mappings:
-```yaml
-data_sources:
-  - name: Chase
-    file: data/chase.csv
-    format: "{date:%m/%d/%Y}, {_}, {description}, {_}, {_}, {amount}"
-  - name: BofA Checking
-    file: data/bofa.csv
-    format: "{date:%m/%d/%Y}, {description}, {-amount}"  # Bank: negative = expense
-```
-
-**Format string syntax:**
-- `{date:%m/%d/%Y}` - Date column with strptime format
-- `{description}` - Transaction description column
-- `{amount}` - Amount column (positive = expense)
-- `{-amount}` - Negate amounts (for bank accounts where negative = expense)
-- `{location}` - Optional location/state column
-- `{_}` - Skip this column
-
-**Sign conventions:**
-- Credit cards typically show charges as positive → use `{amount}`
-- Bank accounts typically show debits as negative → use `{-amount}`
-
-Position in the string = column index (0-based).
-
-### Discovering CSV Structure
-
-Use the **inspect** command to analyze an unknown CSV:
-```bash
-tally inspect path/to/file.csv
-```
-
-This shows column headers, indices, and sample data rows.
-
-### Workflow: Creating a Format String for Any CSV
-
-**Step 1: Inspect the file**
-```bash
-tally inspect data/newbank.csv
-```
-
-**Step 2: Identify the columns**
-Look at the output and find:
-- Which column has the **date** (and what format: MM/DD/YYYY, YYYY-MM-DD, etc.)
-- Which column has the **description** (merchant name)
-- Which column has the **amount**
-- Optionally, which column has **location** (state/country code)
-
-**Step 3: Build the format string**
-For each column position (0, 1, 2, ...), add:
-- `{date:%m/%d/%Y}` if it's the date column (adjust format as needed)
-- `{description}` if it's the description column
-- `{amount}` if it's the amount column
-- `{location}` if it's a location column
-- `{_}` for any columns to skip
-
-**Example:** A CSV with columns: Transaction Date, Post Date, Description, Category, Amount
-
-```yaml
-format: "{date:%m/%d/%Y}, {_}, {description}, {_}, {amount}"
-#         col 0           col 1  col 2       col 3  col 4
-```
-
-**Common date formats:**
-- `%m/%d/%Y` - 01/15/2024 (US format)
-- `%Y-%m-%d` - 2024-01-15 (ISO format)
-- `%d/%m/%Y` - 15/01/2024 (European format)
-- `%m/%d/%y` - 01/15/24 (2-digit year)
-
-**Step 4: Add to settings.yaml and run**
-```bash
-tally run
-```
-
-Transaction descriptions look like:
-- AMEX: `"NETFLIX.COM"`, `"UBER *EATS"`, `"STARBUCKS STORE 12345 SEATTLE WA"`
-- BOA: `"NETFLIX.COM DES:RECURRING ID:xxx"`, `"ZELLE TO JOHN DOE"`
-
-### Custom Column Captures (Multi-Column Description)
-
-Some banks split transaction info across multiple columns (e.g., "Card payment" in one column, "STARBUCKS" in another). Use **custom captures** to combine them:
-
-```yaml
-data_sources:
-  - name: European Bank
-    file: data/bank.csv
-    format: "{date:%Y-%m-%d},{_},{txn_type},{vendor},{_},{amount}"
-    columns:
-      description: "{vendor} ({txn_type})"
-```
-
-**How it works:**
-- Use any name (not a reserved name) in the format string: `{txn_type}`, `{vendor}`, etc.
-- The `columns.description` template combines them in any order
-- Reserved names that cannot be used: `{date}`, `{amount}`, `{location}`, `{description}`, `{_}`
-
-**Example CSV:**
-```csv
-Date,PostDate,Type,Recipient,AccountNum,Amount,Balance
-2025-01-15,2025-01-14,Card payment,STARBUCKS COFFEE,PL123,25.50,1500
-```
-
-With the format above, the description becomes: `"STARBUCKS COFFEE (Card payment)"`
-
-**Rules:**
-- Cannot mix `{description}` with custom captures - use one approach
-- If using custom captures, `columns.description` template is required
-
-## Common Tasks
-
-### Task: User wants to analyze their spending
-1. Ensure `config/settings.yaml` has correct data sources
-2. Run `tally run`
-3. Open the HTML report in `output/`
-
-### Task: User has many "Unknown" transactions
-1. Run `tally discover --format json` to get unknowns sorted by spend
-2. For each unknown merchant, determine appropriate Category/Subcategory
-3. Add patterns to `merchant_categories.csv`
-4. Run `tally run --summary` to verify improvement
-5. Repeat until unknowns are minimized
-
-### Task: User wants to track a specific merchant
-1. Get the exact description from their statement
-2. Create a pattern that matches it
-3. Add to `merchant_categories.csv` with appropriate category
-
-### Task: User wants to separate Costco groceries from Costco gas
-```csv
-COSTCO\\s*GAS,Costco Gas,Transport,Gas
-COSTCO(?!\\s*GAS),Costco,Food,Grocery
-```
-(Gas rule must come first)
-
-## Tips
-
-- Run `tally` with no args to see help
-- Test regex patterns at regex101.com (Python flavor)
-- Comments start with `#` in CSV files
-- Escape special regex chars: `\\.` for literal dot, `\\*` for literal asterisk
-- The tool cleans common prefixes (APLPAY, SQ*, TST*) automatically
-
----
-
-## Real-World Workflow Example
-
-Here's a typical workflow when analyzing a new year's spending data:
-
-### 1. Check for existing config
-```bash
-# Look for existing configs from other years to reuse
-ls ../2024/config/ ../2025/config/ 2>/dev/null
-```
-
-### 2. Examine statement file formats
-The tool expects specific formats. Your files may need transformation:
-
-**Expected AMEX format (CSV):**
-```csv
-Date,Description,Amount
-01/15/2024,AMAZON.COM,-45.99
-01/16/2024,STARBUCKS STORE 12345,-6.50
-```
-
-**Expected BOA format (TXT, space-separated):**
-```
-01/15/2024 NETFLIX.COM DES:RECURRING -15.99 1234.56
-01/16/2024 ZELLE TO JOHN DOE -100.00 1134.56
-```
-
-### 3. Transform data if needed
-If your statement files have different formats, transform them with Python:
-
-**Example: Transform multi-line AMEX export:**
-```python
-import csv
-with open('Amex_raw.csv', 'r') as f:
-    reader = csv.reader(f)
-    # Extract date, description, amount from your specific format
-    # Write to clean CSV with Date,Description,Amount columns
-```
-
-**Example: Transform BOA CSV to TXT:**
-```python
-import csv
-with open('BOA.csv', 'r') as f:
-    reader = csv.DictReader(f)
-    with open('data/boa_clean.txt', 'w') as out:
-        for row in reader:
-            # Format: MM/DD/YYYY Description Amount Balance
-            out.write(f"{row['Date']} {row['Description']} {row['Amount']} {row['Balance']}\\n")
-```
-
-### 4. Copy existing merchant categories
-If another year has good patterns, start with those:
-```bash
-cp ../2025/config/merchant_categories.csv config/
-```
-
-### 5. Run analysis and iterate
-```bash
-# Initial run - will have many "Unknown"
-tally run
-
-# Check what's unknown
-tally run --summary --category Unknown
-
-# Extract unique unknown patterns for analysis
-python3 << 'EOF'
-import csv
-unknowns = {}
-with open('output/transactions.csv') as f:  # or parse from summary
-    # Group by description pattern, sum amounts
-    pass
-# Print top unknowns by spend
-EOF
-```
-
-### 6. Add patterns in batches
-Add patterns for the highest-spend unknowns first:
-
-```csv
-# High-value unknowns from 2024
-BMWFINANCIAL|BMW FINANCIAL,BMW Financial Services,Bills,Auto Loan
-ASHTON BELLEVUE,Ashton Apartments (Rent),Bills,Rent
-MICROSOFT DES:EDIPAYMENT,Microsoft Payroll,Income,Salary
-```
-
-### 7. Iterate until Unknown < 5%
-Re-run after each batch of patterns until categorization rate is acceptable:
-```bash
-tally run  # Check Unknown total
-# Add more patterns
-tally run  # Verify improvement
-```
-
-### Common Data Issues
-
-**BOA files with summary headers:**
-```python
-# Skip header rows before the actual data
-for row in reader:
-    if row['Date'] and '/' in row['Date']:  # Skip summary rows
-        # Process transaction
-```
-
-**AMEX multi-line format:**
-Each transaction may span multiple lines. Look for date patterns to identify record boundaries.
-
-**CHECKCARD prefix in BOA:**
-BOA often prefixes with "CHECKCARD": add patterns like `CHECKCARD.*STARBUCKS`
-
-**State/location suffixes:**
-Descriptions often end with location: `STARBUCKS SEATTLE WA` - the tool handles this automatically.
+## Key Files
+
+- `config/settings.yaml` - Data sources configuration
+- `config/merchant_categories.csv` - Pattern matching rules (main file to edit)
+- `data/` - Your bank/credit card statement files
+- `output/` - Generated reports
 '''
 
-STARTER_CLAUDE_MD = '''# CLAUDE.md - Instructions for Claude Code
+STARTER_CLAUDE_MD = '''# CLAUDE.md - Tally Budget Analyzer
 
-This file provides context for Claude Code when working in this budget directory.
+Run `tally workflow` to see context-aware instructions for your current state.
 
-## Project Overview
-
-This is a personal budget analysis directory using the `tally` CLI tool.
-The tool categorizes bank/credit card transactions and generates spending reports.
-
-## Key Commands
+## Quick Start
 
 ```bash
-# Run analysis (uses ./config by default)
-tally run
-
-# Show summary only (good for checking Unknown transactions)
-tally run --summary
-
-# Run with specific config directory
-tally run ./path/to/config
-
-# Initialize a new budget directory
-tally init
-
-# Discover unknown merchants (KEY FOR CLASSIFICATION)
-tally discover                # Human-readable
-tally discover --format json  # For programmatic use
-tally discover --format csv   # Ready to copy into rules
-
-# Inspect a CSV to determine its format
-tally inspect data/file.csv
+tally workflow    # See what to do next based on current state
+tally --help      # See all available commands
 ```
 
-## Directory Structure
+## Key Files
 
-```
-.
-├── config/
-│   ├── settings.yaml           # Data sources and settings
-│   └── merchant_categories.csv # Pattern matching rules (MAIN FILE TO EDIT)
-├── data/                       # Statement files (DO NOT commit - contains PII)
-└── output/                     # Generated reports
-```
+- `config/settings.yaml` - Data sources configuration
+- `config/merchant_categories.csv` - Pattern matching rules (main file to edit)
+- `data/` - Your bank/credit card statement files (contains PII - do not commit)
+- `output/` - Generated reports
 
-## Primary Task: Classifying Unknown Merchants
-
-When asked to improve categorization:
-
-1. Run `tally discover --format json` to find unknown merchants sorted by spend
-2. For each unknown merchant:
-   - Identify what the merchant is (restaurant, store, subscription, etc.)
-   - Determine appropriate Category and Subcategory
-   - Create a regex pattern that matches the transaction description
-3. Add rules to `config/merchant_categories.csv`
-4. Run `tally run --summary` to verify improvement
-5. Repeat until Unknown < 5% of total
-
-The `discover` command provides suggested patterns and merchant names to speed up this process.
-
-## Pattern Syntax Quick Reference
-
-The Pattern column uses Python regex (case-insensitive):
-
-| Pattern | Matches |
-|---------|---------|
-| `NETFLIX` | Contains "NETFLIX" |
-| `DELTA\\|UNITED` | "DELTA" or "UNITED" |
-| `UBER\\s(?!EATS)` | "UBER " not followed by "EATS" |
-| `COSTCO(?!.*GAS)` | "COSTCO" without "GAS" |
-| `^ATT\\s` | Starts with "ATT " |
-
-### Inline Modifiers (Target Specific Transactions)
-
-Add conditions to target transactions by amount or date:
-
-```csv
-COSTCO[amount>200],Costco Bulk,Shopping,Bulk
-BESTBUY[amount=499.99][date=2025-01-15],TV Purchase,Shopping,Electronics
-HOLIDAY[month=12],December Shopping,Shopping,Gifts
-```
-
-**Amount:** `[amount>N]`, `[amount<N]`, `[amount=N]`, `[amount:MIN-MAX]`
-**Date:** `[date=YYYY-MM-DD]`, `[date:START..END]`, `[date:lastNdays]`, `[month=N]`
-
-## Common Categories
-
-- **Food**: Grocery, Restaurant, Fast Food, Coffee, Delivery
-- **Shopping**: Online, Retail, Clothing, Electronics, Home
-- **Travel**: Airline, Lodging, Car Rental
-- **Transport**: Rideshare, Gas, Parking
-- **Subscriptions**: Streaming, Software
-- **Health**: Gym, Pharmacy, Medical
-- **Bills**: Rent, Mortgage, Insurance, Utilities
-- **Transfers**: P2P, CC Payment
-
-## Travel Detection
-
-International transactions are automatically classified as travel.
-Domestic out-of-state is NOT auto-travel (opt-in via merchant rules).
-
-To mark a domestic location as travel, add to merchant_categories.csv:
-```csv
-.*\\sHI$,Hawaii Trip,Travel,Hawaii
-```
-
-## Important Notes
+## Important
 
 - Statement files in `data/` contain PII - never commit or display raw contents
-- First matching rule wins - put specific patterns before general ones
-- Test patterns at regex101.com (Python flavor)
-- The tool auto-cleans prefixes like APLPAY, SQ*, TST*
-
-## Data Format Requirements
-
-The tool supports multiple data formats:
-
-### Predefined Types
-- **AMEX**: CSV with Date,Description,Amount columns (`type: amex`)
-- **BOA**: TXT with "MM/DD/YYYY Description Amount Balance" per line (`type: boa`)
-
-### Custom Format Strings
-For any other CSV, use the `format` field with a format string:
-
-```yaml
-data_sources:
-  - name: Chase
-    file: data/chase.csv
-    format: "{date:%m/%d/%Y}, {_}, {description}, {_}, {amount}"
-  - name: BofA Checking
-    file: data/bofa.csv
-    format: "{date:%m/%d/%Y}, {description}, {-amount}"  # Bank: negative = expense
-```
-
-**Format string tokens:**
-- `{date:%m/%d/%Y}` - Date column (with strptime format)
-- `{description}` - Description/merchant column
-- `{amount}` - Amount column (positive = expense)
-- `{-amount}` - Negate amounts (for bank accounts where negative = expense)
-- `{location}` - Optional location column
-- `{_}` - Skip column
-
-**Sign conventions:**
-- Credit cards typically show charges as positive → use `{amount}`
-- Bank accounts typically show debits as negative → use `{-amount}`
-
-Use `tally inspect <file>` to see the CSV structure before creating a format string.
+- Run `tally workflow` to see the categorization workflow and next steps
 '''
 
 
@@ -2051,6 +1302,125 @@ def cmd_diag(args):
         print(json_module.dumps(output, indent=2))
 
 
+def cmd_workflow(args):
+    """Show context-aware workflow instructions for AI agents."""
+    import subprocess
+
+    # Detect current state
+    config_dir = find_config_dir()
+    has_config = config_dir is not None
+    has_data_sources = False
+    unknown_count = 0
+    total_unknown_spend = 0
+
+    if has_config:
+        try:
+            config = load_config(config_dir)
+            has_data_sources = bool(config.get('data_sources'))
+
+            if has_data_sources:
+                # Try to get unknown merchant count
+                try:
+                    result = subprocess.run(
+                        ['tally', 'discover', '--format', 'json'],
+                        capture_output=True, text=True, timeout=30
+                    )
+                    if result.returncode == 0:
+                        import json as json_module
+                        unknowns = json_module.loads(result.stdout)
+                        unknown_count = len(unknowns)
+                        total_unknown_spend = sum(u.get('total_spend', 0) for u in unknowns)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    # Build context-aware output
+    print(f"{C.BOLD}TALLY WORKFLOW{C.RESET}")
+    print("=" * 50)
+    print()
+
+    # Show current state
+    print(f"{C.BOLD}Current State:{C.RESET}")
+    if not has_config:
+        print(f"  {C.YELLOW}⚠{C.RESET} No config directory found")
+        print()
+        print(f"{C.BOLD}SETUP{C.RESET}")
+        print("1. Run: tally init")
+        print("2. Add bank/credit card CSVs to ./data/")
+        print("3. Configure data sources in ./config/settings.yaml")
+        print("4. Run: tally workflow (to see next steps)")
+        return
+
+    if not has_data_sources:
+        print(f"  {C.YELLOW}⚠{C.RESET} No data sources configured")
+        print()
+        print(f"{C.BOLD}SETUP DATA SOURCES{C.RESET}")
+        print("1. Add bank/credit card CSVs to ./data/")
+        print("2. Run: tally inspect ./data/yourfile.csv")
+        print("   (to see columns and get format string)")
+        print("3. Edit ./config/settings.yaml:")
+        print(f"""
+   {C.DIM}data_sources:
+     - name: My Card
+       file: data/transactions.csv
+       format: "{{date:%m/%d/%Y}},{{description}},{{amount}}"{C.RESET}
+""")
+        print("4. Run: tally workflow (to see next steps)")
+        return
+
+    if unknown_count > 0:
+        print(f"  {C.GREEN}✓{C.RESET} Config found")
+        print(f"  {C.GREEN}✓{C.RESET} Data sources configured")
+        print(f"  {C.YELLOW}⚠{C.RESET} {unknown_count} unknown merchants (${total_unknown_spend:,.0f} spend)")
+    else:
+        print(f"  {C.GREEN}✓{C.RESET} Config found")
+        print(f"  {C.GREEN}✓{C.RESET} Data sources configured")
+        print(f"  {C.GREEN}✓{C.RESET} All merchants categorized")
+
+    print()
+
+    # Show relevant workflow
+    if unknown_count > 0:
+        print(f"{C.BOLD}CATEGORIZATION LOOP{C.RESET}")
+        print("1. Run: tally discover --format json")
+        print("   (get unknown merchants sorted by spend)")
+        print("2. For each unknown, add a rule to ./config/merchant_categories.csv:")
+        print(f"   {C.DIM}Pattern,Merchant,Category,Subcategory,Tags{C.RESET}")
+        print(f"   {C.DIM}STARBUCKS,Starbucks,Food,Coffee,{C.RESET}")
+        print("3. Run: tally run --summary")
+        print("   (verify categorization improved)")
+        print("4. Repeat until no unknowns")
+        print()
+
+    print(f"{C.BOLD}COMMANDS{C.RESET}")
+    print(f"  {C.CYAN}tally run{C.RESET}              Generate HTML spending report")
+    print(f"  {C.CYAN}tally run --summary{C.RESET}    Quick text summary")
+    print(f"  {C.CYAN}tally discover{C.RESET}         Find unknown merchants with suggested patterns")
+    print(f"  {C.CYAN}tally explain{C.RESET}          Debug why merchants are classified")
+    print(f"  {C.CYAN}tally diag{C.RESET}             Diagnose config/parsing issues")
+    print(f"  {C.CYAN}tally inspect FILE{C.RESET}     Analyze CSV structure")
+    print()
+
+    print(f"{C.BOLD}PATTERN SYNTAX{C.RESET} (Python regex, case-insensitive)")
+    print(f"  {C.CYAN}STARBUCKS{C.RESET}              Contains 'STARBUCKS'")
+    print(f"  {C.CYAN}UBER|LYFT{C.RESET}              Either UBER or LYFT")
+    print(f"  {C.CYAN}UBER\\s(?!EATS){C.RESET}         UBER but not UBER EATS")
+    print(f"  {C.CYAN}COSTCO(?!.*GAS){C.RESET}        COSTCO without GAS after it")
+    print()
+
+    print(f"{C.BOLD}COMMON CATEGORIES{C.RESET}")
+    print("  Food: Grocery, Restaurant, Coffee, Delivery")
+    print("  Shopping: Online, Retail, Clothing, Electronics")
+    print("  Travel: Airline, Lodging, Car Rental")
+    print("  Transport: Rideshare, Gas, Parking")
+    print("  Subscriptions: Streaming, Software")
+    print("  Bills: Rent, Utilities, Insurance")
+    print()
+
+    print(f"{C.DIM}Tip: First match wins - put specific patterns before general ones{C.RESET}")
+
+
 def cmd_update(args):
     """Handle the update command."""
     if args.prerelease:
@@ -2751,6 +2121,13 @@ Examples:
         help='Filter by tags (comma-separated, e.g., --tags business,reimbursable)'
     )
 
+    # workflow subcommand
+    subparsers.add_parser(
+        'workflow',
+        help='Show context-aware workflow instructions for AI agents',
+        description='Detects current state and shows relevant next steps.'
+    )
+
     # version subcommand
     subparsers.add_parser(
         'version',
@@ -2818,6 +2195,8 @@ Examples:
         cmd_diag(args)
     elif args.command == 'explain':
         cmd_explain(args)
+    elif args.command == 'workflow':
+        cmd_workflow(args)
     elif args.command == 'version':
         sha_display = GIT_SHA[:8] if GIT_SHA != 'unknown' else 'unknown'
         print(f"tally {VERSION} ({sha_display})")
