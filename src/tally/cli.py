@@ -56,14 +56,7 @@ from ._version import (
 )
 from .config_loader import load_config
 
-BANNER = r'''
-  ████████╗ █████╗ ██╗     ██╗  ██╗   ██╗
-  ╚══██╔══╝██╔══██╗██║     ██║  ╚██╗ ██╔╝
-     ██║   ███████║██║     ██║   ╚████╔╝
-     ██║   ██╔══██║██║     ██║    ╚██╔╝
-     ██║   ██║  ██║███████╗███████╗██║
-     ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝
-'''
+BANNER = ''
 from .merchant_utils import get_all_rules, diagnose_rules
 from .analyzer import (
     parse_amex,
@@ -1920,22 +1913,7 @@ def main():
         prog='tally',
         description='Let AI classify your transactions - LLM-powered spending categorization.',
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog='''
-Examples:
-  tally init                 Initialize in ./tally directory
-  tally init ./my-budget     Initialize in specified directory
-  tally run                  Run analysis (uses ./config)
-  tally run ./my-budget/config   Run with specific config
-  tally run --summary        Show summary only, no HTML report
-  tally inspect data/bank.csv  Inspect CSV to determine format
-  tally discover             Find unknown merchants, suggest rules
-  tally discover --format json  JSON output for agents
-  tally diag                  Show diagnostic info about rules
-  tally diag --format json    JSON output for agents
-  tally update               Update tally to latest version
-  tally update --check       Check for updates without installing
-  tally update --assets      Update AGENTS.md and CLAUDE.md
-'''
+        epilog='''Run 'tally workflow' to see next steps based on your current state.'''
     )
 
     subparsers = parser.add_subparsers(dest='command', title='commands', metavar='<command>')
@@ -1943,8 +1921,7 @@ Examples:
     # init subcommand
     init_parser = subparsers.add_parser(
         'init',
-        help='Set up a new budget folder with config files (run once to get started)',
-        description='Initialize a new budget directory with settings, merchant categories, and documentation.'
+        help='Set up a new budget folder with config files (run once to get started)'
     )
     init_parser.add_argument(
         'dir',
@@ -1956,8 +1933,7 @@ Examples:
     # run subcommand
     run_parser = subparsers.add_parser(
         'run',
-        help='Parse transactions, categorize them, and generate HTML spending report',
-        description='Run the budget analyzer on your transaction data.'
+        help='Parse transactions, categorize them, and generate HTML spending report'
     )
     run_parser.add_argument(
         'config',
