@@ -424,6 +424,11 @@ STARTER_MERCHANTS = '''# Tally Merchant Rules
 # category: Shopping
 # subcategory: Wholesale
 
+# [Uber Rides]
+# match: regex("UBER\\s(?!EATS)")  # Uber but not Uber Eats
+# category: Transportation
+# subcategory: Rideshare
+
 # === Add your rules below ===
 
 '''
@@ -2333,8 +2338,12 @@ def cmd_workflow(args):
     print(f"    {C.DIM}[Netflix]")
     print(f"    match: contains(\"NETFLIX\")")
     print(f"    category: Subscriptions")
-    print(f"    subcategory: Streaming")
-    print(f"    tags: entertainment, recurring{C.RESET}")
+    print(f"    subcategory: Streaming{C.RESET}")
+    print()
+    print(f"    {C.DIM}[Uber Rides]")
+    print(f"    match: regex(\"UBER\\\\s(?!EATS)\")  # not Uber Eats")
+    print(f"    category: Transportation")
+    print(f"    subcategory: Rideshare{C.RESET}")
     print()
     print(f"    {C.BOLD}Match functions:{C.RESET}")
     funcs = [
