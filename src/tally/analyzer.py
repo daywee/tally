@@ -618,7 +618,7 @@ def analyze_transactions(transactions):
         by_merchant[txn['merchant']]['transactions'].append({
             'date': txn['date'].strftime('%m/%d'),
             'month': month_key,
-            'description': txn['description'],
+            'description': txn.get('raw_description', txn['description']),
             'amount': txn['amount'],
             'source': txn['source'],
             'location': txn.get('location'),
