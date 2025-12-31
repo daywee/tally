@@ -256,8 +256,8 @@
                     <section class="category-section">
                         <div class="section-header" @click="toggleSection('cat:' + categoryName)">
                             <h2>
-                                <span class="category-dot" :style="{ backgroundColor: categoryColorMap[categoryName] }"></span>
                                 <span class="toggle">{{ collapsedSections.has('cat:' + categoryName) ? '▶' : '▼' }}</span>
+                                <span class="category-dot" :style="{ backgroundColor: categoryColorMap[categoryName] }"></span>
                                 {{ categoryName }}
                             </h2>
                             <span class="section-total">
