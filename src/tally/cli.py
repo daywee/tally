@@ -338,16 +338,17 @@ year: {year}
 title: "Spending Analysis {year}"
 
 # Data sources - add your statement files here
+# Run: tally inspect <file> to auto-detect the format string
 data_sources:
-  # Example AMEX CSV export:
-  # - name: AMEX
-  #   file: data/amex-{year}.csv
-  #   type: amex
+  # Example credit card CSV:
+  # - name: Credit Card
+  #   file: data/card-{year}.csv
+  #   format: "{{date:%m/%d/%Y}},{{description}},{{amount}}"
   #
-  # Example Bank of America text statement:
-  # - name: BOA Checking
-  #   file: data/boa-checking.txt
-  #   type: boa
+  # Example bank statement:
+  # - name: Checking
+  #   file: data/checking-{year}.csv
+  #   format: "{{date:%Y-%m-%d}},{{description}},{{amount}}"
 
 output_dir: output
 html_filename: spending_summary.html
