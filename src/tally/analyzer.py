@@ -1457,11 +1457,19 @@ def write_summary_file_vue(stats, filepath, year=2025, home_locations=None, curr
 
     # Build category view - group all merchants by category -> subcategory
     def build_category_view():
-        # Collect all merchants from all sections
+        # Collect all merchants - from sections if available, otherwise from classification dicts
         all_merchants = {}
-        for section in sections.values():
-            for merchant_id, merchant in section['merchants'].items():
-                all_merchants[merchant_id] = merchant
+        if sections:
+            for section in sections.values():
+                for merchant_id, merchant in section['merchants'].items():
+                    all_merchants[merchant_id] = merchant
+        else:
+            # Fallback: build from classification dicts when no views configured
+            for merchant_dict in [monthly_merchants, annual_merchants, periodic_merchants,
+                                  travel_merchants, one_off_merchants, variable_merchants]:
+                for merchant_name, data in merchant_dict.items():
+                    merchant_id = make_merchant_id(merchant_name)
+                    all_merchants[merchant_id] = build_section_merchants({merchant_name: data})[merchant_id]
 
         # Group by category -> subcategory
         categories = {}

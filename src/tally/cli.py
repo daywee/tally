@@ -1097,7 +1097,7 @@ def cmd_run(args):
         if stats.get('sections'):
             print_sections_summary(stats, year=year, currency_format=currency_format, only_filter=only_filter)
         else:
-            print_summary(stats, year=year, currency_format=currency_format)
+            print("No views configured. Add 'views_file' to settings.yaml for custom views.", file=sys.stderr)
     else:
         # HTML output (default)
         # Print summary first
@@ -1105,7 +1105,7 @@ def cmd_run(args):
             if stats.get('sections'):
                 print_sections_summary(stats, year=year, currency_format=currency_format, only_filter=only_filter)
             else:
-                print_summary(stats, year=year, currency_format=currency_format)
+                print("No views configured. Add 'views_file' to settings.yaml for custom views.", file=sys.stderr)
 
         # Determine output path
         if args.output:
