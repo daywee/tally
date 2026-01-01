@@ -36,7 +36,8 @@ const MerchantSection = defineComponent({
         formatPct: { type: Function, default: null },
         addFilter: { type: Function, required: true },
         getLocationClass: { type: Function, default: null },
-        highlightDescription: { type: Function, default: (d) => d }
+        highlightDescription: { type: Function, default: (d) => d },
+        tagColor: { type: Function, default: () => '#888' }
     },
     computed: {
         // Label spans first 4 columns in all modes
@@ -156,6 +157,7 @@ const MerchantSection = defineComponent({
                                     <td v-if="categoryMode" data-testid="merchant-count">{{ item.filteredCount || item.count }}</td>
                                     <td class="tags-cell">
                                         <span v-for="tag in getTags(item)" :key="tag" class="tag-badge" data-testid="tag-badge"
+                                              :style="{ borderColor: tagColor(tag), color: tagColor(tag) }"
                                               @click.stop="addFilter(tag, 'tag')">{{ tag }}</span>
                                     </td>
                                     <td v-if="!categoryMode" data-testid="merchant-count">{{ item.filteredCount || item.count }}</td>
@@ -184,6 +186,7 @@ const MerchantSection = defineComponent({
                                                       :key="tag"
                                                       class="tag-badge"
                                                       data-testid="tag-badge"
+                                                      :style="{ borderColor: tagColor(tag), color: tagColor(tag) }"
                                                       @click.stop="addFilter(tag, 'tag')">{{ tag }}</span>
                                             </span>
                                             <span class="txn-amount" :class="getTxnAmountClass(txn)">
@@ -314,6 +317,13 @@ const CATEGORY_COLORS = [
     '#4facfe', '#00f2fe', '#4dffd2', '#ffa94d', '#f5af19',
     '#f093fb', '#fa709a', '#ff6b6b', '#a855f7', '#3b82f6',
     '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+];
+
+// Tag colors (distinct from category colors, warmer/earthier tones)
+const TAG_COLORS = [
+    '#e879f9', '#c084fc', '#a78bfa', '#818cf8', '#6366f1',
+    '#f472b6', '#fb7185', '#f87171', '#fb923c', '#fbbf24',
+    '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#22d3ee'
 ];
 
 createApp({
@@ -845,6 +855,47 @@ createApp({
             });
             return colorMap;
         });
+
+        // Map tag names to colors (sorted by frequency)
+        const tagColorMap = computed(() => {
+            const data = spendingData.value;
+            const categoryView = data.categoryView || {};
+            const tagCounts = {};
+
+            // Count tag usage across all merchants
+            for (const category of Object.values(categoryView)) {
+                for (const subcat of Object.values(category.subcategories || {})) {
+                    for (const merchant of Object.values(subcat.merchants || {})) {
+                        for (const tag of (merchant.tags || [])) {
+                            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                        }
+                    }
+                }
+            }
+            // Also count from excluded and refund transactions
+            for (const txn of (data.excludedTransactions || [])) {
+                for (const tag of (txn.tags || [])) {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                }
+            }
+            for (const txn of (data.refundTransactions || [])) {
+                for (const tag of (txn.tags || [])) {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                }
+            }
+
+            // Sort by count descending and assign colors
+            const sorted = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+            const colorMap = {};
+            sorted.forEach(([tag, _], idx) => {
+                colorMap[tag] = TAG_COLORS[idx % TAG_COLORS.length];
+            });
+            return colorMap;
+        });
+
+        function tagColor(tag) {
+            return tagColorMap.value[tag] || TAG_COLORS[0];
+        }
 
         // Filtered months for charts (respects month filters)
         const filteredMonthsForCharts = computed(() => {
@@ -1599,7 +1650,7 @@ createApp({
             visibleSections, filteredCategoryView, positiveCategoryView, creditMerchants, filteredSectionView, hasSections,
             sectionTotals, grandTotal, grossSpending, creditsTotal, uncategorizedTotal,
             numFilteredMonths, filteredAutocomplete, availableMonths,
-            categoryColorMap,
+            categoryColorMap, tagColor,
             // Excluded transactions
             excludedTotal, filteredExcludedCount, groupedExcluded, expandedExcluded,
             // Cash flow

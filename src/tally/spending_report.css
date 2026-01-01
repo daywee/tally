@@ -683,7 +683,7 @@ tr.hidden {
     background: var(--bg-table-header);
     border-top: 2px solid var(--border-light);
 }
-/* Tag badges in table */
+/* Tag badges in table (colors set dynamically via inline style) */
 .tag-badge {
     display: inline-block;
     font-size: 0.7rem;
@@ -691,15 +691,13 @@ tr.hidden {
     margin-right: 0.25rem;
     margin-bottom: 0.15rem;
     border-radius: 10px;
-    background: rgba(245, 175, 25, 0.15);
-    color: var(--accent-yellow);
-    border: 1px solid rgba(245, 175, 25, 0.3);
+    background: color-mix(in srgb, currentColor 15%, transparent);
+    border: 1px solid currentColor;
     cursor: pointer;
     transition: all 0.2s;
 }
 .tag-badge:hover {
-    background: rgba(245, 175, 25, 0.3);
-    border-color: var(--accent-yellow);
+    background: color-mix(in srgb, currentColor 30%, transparent);
 }
 .tags-cell {
     max-width: 150px;
@@ -1340,10 +1338,6 @@ section:nth-child(5) { animation-delay: 0.4s; }
     font-size: 0.7rem;
     padding: 0.1rem 0.4rem;
 }
-.excluded-section .tag-badge[class*="income"] {
-    background: rgba(46, 204, 113, 0.2);
-    color: var(--accent-green);
-}
 
 /* Transfers Section */
 .transfers-section {
@@ -1366,13 +1360,6 @@ section:nth-child(5) { animation-delay: 0.4s; }
 }
 .refund-amount {
     color: var(--accent-orange, #f59e0b) !important;
-}
-
-/* Special Tags (income, refund, transfer) */
-.tag-badge.special-tag {
-    background: var(--accent-purple, #9333ea);
-    color: white;
-    font-weight: 500;
 }
 
 /* View Toggle (By Category / By View) */
