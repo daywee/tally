@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+    <url>
+        <loc>https://tallyai.money/</loc>
+        <lastmod>2026-01-01</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+        <image:image>
+            <image:loc>https://tallyai.money/screenshot.png</image:loc>
+            <image:caption>Tally spending report showing categorized transactions and budget analysis</image:caption>
+            <image:title>Tally Report Screenshot</image:title>
+        </image:image>
+        <image:image>
+            <image:loc>https://tallyai.money/demo.gif</image:loc>
+            <image:caption>Animated demo of Tally workflow with AI assistant</image:caption>
+            <image:title>Tally Demo</image:title>
+        </image:image>
+        <image:image>
+            <image:loc>https://tallyai.money/logo.svg</image:loc>
+            <image:caption>Tally logo</image:caption>
+            <image:title>Tally Logo</image:title>
+        </image:image>
+    </url>
+</urlset>

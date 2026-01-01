@@ -3,11 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tally - Let AI Classify Your Transactions</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Tally - AI-Powered Transaction Classification Tool</title>
+    <meta name="title" content="Tally - AI-Powered Transaction Classification Tool">
+    <meta name="description" content="Tally is an open-source tool that works with AI assistants like Claude, Copilot, and Codex to automatically categorize your bank transactions. No cloud, no database - just a local file you control.">
+    <meta name="keywords" content="transaction classification, AI banking, expense tracking, budget tool, open source finance, bank transactions, CSV parser, spending analysis, personal finance, AI assistant">
+    <meta name="author" content="Tally">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://tallyai.money/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tallyai.money/">
+    <meta property="og:title" content="Tally - AI-Powered Transaction Classification Tool">
+    <meta property="og:description" content="Automatically categorize bank transactions with AI. Works with Claude, Copilot, and Codex. Open source, local-first, no cloud required.">
+    <meta property="og:image" content="https://tallyai.money/screenshot.png">
+    <meta property="og:image:alt" content="Tally spending report showing categorized transactions and monthly budget analysis">
+    <meta property="og:site_name" content="Tally">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://tallyai.money/">
+    <meta name="twitter:title" content="Tally - AI-Powered Transaction Classification Tool">
+    <meta name="twitter:description" content="Automatically categorize bank transactions with AI. Works with Claude, Copilot, and Codex. Open source, local-first, no cloud required.">
+    <meta name="twitter:image" content="https://tallyai.money/screenshot.png">
+    <meta name="twitter:image:alt" content="Tally spending report showing categorized transactions">
+    
+    <!-- Favicon and Icons -->
     <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link rel="apple-touch-icon" href="logo.svg">
+    <meta name="theme-color" content="#16a34a">
+    
+    <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Tally",
+      "description": "AI-powered transaction classification tool that works with Claude, Copilot, and other AI assistants to automatically categorize bank transactions",
+      "url": "https://tallyai.money",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Linux, macOS, Windows",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Tally"
+      },
+      "softwareVersion": "latest",
+      "license": "https://opensource.org/licenses/MIT",
+      "codeRepository": "https://github.com/davidfowl/tally",
+      "programmingLanguage": "Python",
+      "screenshot": "https://tallyai.money/screenshot.png",
+      "keywords": "transaction classification, AI banking, expense tracking, budget tool, personal finance"
+    }
+    </script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -30,7 +89,7 @@
             margin-bottom: 5rem;
         }
 
-        .logo {
+        .logo, h1.logo {
             font-family: 'JetBrains Mono', monospace;
             font-size: 3.5rem;
             font-weight: 600;
@@ -189,6 +248,13 @@
             margin-bottom: 1.5rem;
         }
 
+        h3.step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 0.5rem;
+        }
+
         .install-card {
             background: #0d0d0d;
             border: 1px solid rgba(255,255,255,0.1);
@@ -312,13 +378,6 @@
             margin-bottom: 0.5rem;
         }
 
-        .step-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: rgba(255,255,255,0.95);
-            margin-bottom: 0.5rem;
-        }
-
         .step-desc {
             color: rgba(255,255,255,0.7);
             font-size: 0.95rem;
@@ -431,22 +490,22 @@
 </head>
 <body>
     <div class="container">
-        <div class="hero">
-            <div class="logo"><img src="logo.svg" alt="Tally logo" class="logo-icon">tally</div>
+        <header class="hero">
+            <h1 class="logo"><img src="logo.svg" alt="Tally logo" class="logo-icon">tally</h1>
             <p class="tagline">A tool to help agents classify your bank transactions.</p>
             <span class="badge">Works with GH Copilot, Claude Code, Codex, and other command-line based AI assistants</span>
-        </div>
+        </header>
 
         <div class="callout">
             Tally works with your favorite AI coding assistant to automatically categorize transactions.
         </div>
 
-        <div class="demo">
-            <img src="demo.gif" alt="Terminal demo of tally workflow">
-        </div>
+        <section class="demo">
+            <img src="demo.gif" alt="Animated terminal demo showing Tally workflow with AI assistant categorizing bank transactions in real-time">
+        </section>
 
-        <div class="story-section">
-            <div class="problem">
+        <section class="story-section">
+            <article class="problem">
                 <h2>The Problem</h2>
                 <div class="transaction-examples">
                     <code>WHOLEFDS MKT 10847 SEATTLE WA</code>
@@ -454,8 +513,8 @@
                     <code>SQ *JOES COFFEE SEATTLE</code>
                 </div>
                 <p>Bank transactions look like gibberish. Your bank's categories are too broad—"Shopping" when you need "Kids > Clothing" vs "Home > Furniture". Restaurants get lumped together when you want "Coffee" tracked separately from "Fast Food".</p>
-            </div>
-            <div class="solution">
+            </article>
+            <article class="solution">
                 <h2>The Solution</h2>
                 <p>AI assistants <em>know</em> what "WHOLEFDS MKT" is. They understand "SQ *" means Square. Just tell Tally your categorization rules in plain English:</p>
                 <div class="example-rules">
@@ -463,10 +522,10 @@
                     <code>"COSTCO with GAS is fuel, otherwise groceries"</code>
                 </div>
                 <p>Tally works with your AI to write the rules to a simple file. No database, no cloud service. Just a file on your computer that you control.</p>
-            </div>
-        </div>
+            </article>
+        </section>
 
-        <div class="install-section">
+        <section class="install-section">
             <h2>Install</h2>
 
             <div class="install-card">
@@ -501,14 +560,14 @@
                     <button class="copy-btn" onclick="copyCmd(this)">Copy</button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <h2>Workflow</h2>
-        <div class="workflow">
+        <section class="workflow">
+            <h2>Workflow</h2>
             <div class="workflow-step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <div class="step-title">Download your CSVs</div>
+                    <h3 class="step-title">Download your CSVs</h3>
                     <div class="step-desc">Export transactions from your bank and credit card accounts</div>
                 </div>
             </div>
@@ -528,7 +587,7 @@
             <div class="workflow-step ai-step">
                 <div class="step-number">🤖</div>
                 <div class="step-content">
-                    <div class="step-title">Tally + AI Work Together</div>
+                    <h3 class="step-title">Tally + AI Work Together</h3>
                     <div class="step-desc">Tally guides your AI assistant through the process:</div>
                     <div class="ai-loop">
                         <div class="loop-item">Tally finds transactions that aren't categorized yet</div>
@@ -548,21 +607,21 @@
                 </div>
             </div>
 
-            <div class="report-preview">
-                <img src="screenshot.png" alt="Tally spending report showing monthly budget, recurring expenses, and transaction categories">
-            </div>
-        </div>
+            <figure class="report-preview">
+                <img src="screenshot.png" alt="Tally spending report showing monthly budget overview, recurring expenses breakdown, and transaction categories with detailed spending analysis">
+            </figure>
+        </section>
 
-        <div class="open-source">
+        <section class="open-source">
             <a href="https://github.com/davidfowl/tally" class="oss-badge">Open Source</a>
             <p>Tally is MIT licensed. Contributions welcome!</p>
-        </div>
+        </section>
 
-        <div class="links">
+        <footer class="links">
             <a href="https://github.com/davidfowl/tally">GitHub</a>
             <a href="https://github.com/davidfowl/tally/releases">Releases</a>
             <a href="https://github.com/davidfowl/tally#readme">Docs</a>
-        </div>
+        </footer>
     </div>
 
     <script>
