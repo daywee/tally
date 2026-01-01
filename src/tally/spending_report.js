@@ -574,32 +574,56 @@ createApp({
             return spendingData.value.excludedTransactions || [];
         });
 
-        // Helper to check if transaction passes active tag filters
-        function passesTagFilters(txn) {
-            const tagIncludes = activeFilters.value.filter(f => f.type === 'tag' && f.mode === 'include');
-            const tagExcludes = activeFilters.value.filter(f => f.type === 'tag' && f.mode === 'exclude');
+        // Helper to check if excluded transaction passes all active filters
+        // Excluded transactions have merchant/category/tags directly on the transaction object
+        function passesExcludedFilters(txn) {
+            const includes = activeFilters.value.filter(f => f.mode === 'include');
+            const excludes = activeFilters.value.filter(f => f.mode === 'exclude');
 
-            // If no tag filters, pass
-            if (tagIncludes.length === 0 && tagExcludes.length === 0) return true;
-
-            const txnTags = (txn.tags || []).map(t => t.toLowerCase());
-
-            // Check excludes first
-            for (const f of tagExcludes) {
-                if (txnTags.includes(f.text.toLowerCase())) return false;
+            // Helper to match a single filter against the transaction
+            function matchesExcludedFilter(t, filter) {
+                const text = filter.text.toLowerCase();
+                switch (filter.type) {
+                    case 'merchant':
+                        return (t.merchant || '').toLowerCase() === text;
+                    case 'category':
+                        return (t.category || '').toLowerCase().includes(text) ||
+                               (t.subcategory || '').toLowerCase().includes(text);
+                    case 'location':
+                        return (t.location || '').toLowerCase() === text;
+                    case 'month':
+                        return monthMatches(t.month, filter.text);
+                    case 'tag':
+                        return (t.tags || []).some(tag => tag.toLowerCase() === text);
+                    default:
+                        return false;
+                }
             }
 
-            // If there are includes, must match at least one
-            if (tagIncludes.length > 0) {
-                return tagIncludes.some(f => txnTags.includes(f.text.toLowerCase()));
+            // Check excludes first
+            for (const f of excludes) {
+                if (matchesExcludedFilter(txn, f)) return false;
+            }
+
+            // Group includes by type
+            const byType = {};
+            includes.forEach(f => {
+                if (!byType[f.type]) byType[f.type] = [];
+                byType[f.type].push(f);
+            });
+
+            // AND across types, OR within type
+            for (const [type, filters] of Object.entries(byType)) {
+                const anyMatch = filters.some(f => matchesExcludedFilter(txn, f));
+                if (!anyMatch) return false;
             }
 
             return true;
         }
 
-        // Filtered excluded transactions (respects tag filters)
+        // Filtered excluded transactions (respects all filters)
         const filteredExcluded = computed(() => {
-            return excludedTransactions.value.filter(t => passesTagFilters(t));
+            return excludedTransactions.value.filter(t => passesExcludedFilters(t));
         });
         const excludedTotal = computed(() => {
             return filteredExcluded.value.reduce((sum, t) => sum + t.amount, 0);
