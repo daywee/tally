@@ -404,6 +404,26 @@ STARTER_MERCHANTS = '''# Tally Merchant Rules
 # Run: tally inspect <file> to see your transaction descriptions.
 # Run: tally discover to find unknown merchants.
 
+# === Special Tags ===
+# These tags control how transactions appear in your spending report:
+#
+#   income   - Deposits, salary, interest (excluded from spending)
+#   transfer - Account transfers, CC payments (excluded from spending)
+#   refund   - Returns and credits (shown in Credits Applied section)
+#
+# Example:
+#   [Paycheck]
+#   match: contains("DIRECT DEPOSIT") or contains("PAYROLL")
+#   category: Income
+#   subcategory: Salary
+#   tags: income
+#
+#   [Credit Card Payment]
+#   match: contains("PAYMENT THANK YOU")
+#   category: Finance
+#   subcategory: Payment
+#   tags: transfer
+
 # === Variables (optional) ===
 # is_large = amount > 500
 # is_holiday = month >= 11 and month <= 12

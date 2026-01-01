@@ -1036,6 +1036,20 @@ def print_summary(stats, year=2025, filter_category=None, currency_format="${amo
     print()
     print(f"TOTAL SPENDING (YTD):        {fmt(actual_spending):>14}")
 
+    # Show excluded transactions info
+    excluded_count = stats.get('excluded_count', 0)
+    excluded_total = stats.get('excluded_total', 0)
+    if excluded_count > 0:
+        print()
+        print(f"Excluded (income/transfer):  {fmt(excluded_total):>14}  ({excluded_count} transactions)")
+    else:
+        # Hint about special tags when none are used
+        print()
+        print("TIP: Use special tags to exclude non-spending transactions:")
+        print("     income   - salary, deposits    (excluded from totals)")
+        print("     transfer - CC payments, moves  (excluded from totals)")
+        print("     refund   - returns, credits    (shown in Credits section)")
+
     # =========================================================================
     # EVERY MONTH (6+ months)
     # =========================================================================
