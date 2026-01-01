@@ -34,7 +34,8 @@ const MerchantSection = defineComponent({
         formatDate: { type: Function, required: true },
         formatPct: { type: Function, default: null },
         addFilter: { type: Function, required: true },
-        getLocationClass: { type: Function, default: null }
+        getLocationClass: { type: Function, default: null },
+        highlightDescription: { type: Function, default: (d) => d }
     },
     computed: {
         // Label spans first 4 columns in all modes
@@ -159,7 +160,7 @@ const MerchantSection = defineComponent({
                                         <div class="txn-detail">
                                             <span class="txn-date">{{ formatDate(txn.date) }}</span>
                                             <span v-if="txn.source" class="txn-source" :class="txn.source.toLowerCase()">{{ txn.source }}</span>
-                                            <span class="txn-desc">{{ txn.description }}</span>
+                                            <span class="txn-desc" v-html="highlightDescription(txn.description)"></span>
                                             <span class="txn-amount" :class="getTxnAmountClass(txn)">
                                                 {{ formatTxnAmount(txn) }}
                                             </span>
@@ -668,6 +669,8 @@ createApp({
                         return monthMatches(t.month, filter.text);
                     case 'tag':
                         return (t.tags || []).some(tag => tag.toLowerCase() === text);
+                    case 'text':
+                        return (t.description || '').toLowerCase().includes(text);
                     default:
                         return false;
                 }
@@ -954,9 +957,24 @@ createApp({
         const filteredAutocomplete = computed(() => {
             const q = searchQuery.value.toLowerCase().trim();
             if (!q) return [];
-            return autocompleteItems.value
+
+            // Get matching autocomplete items (merchants, categories, etc.)
+            const matches = autocompleteItems.value
                 .filter(item => item.displayText.toLowerCase().includes(q))
-                .slice(0, 10);
+                .slice(0, 8);
+
+            // Add "Search transactions for: X" option at the end
+            if (q.length >= 2) {
+                matches.push({
+                    type: 'text',
+                    filterText: q,
+                    displayText: `Search transactions: "${q}"`,
+                    id: `search:${q}`,
+                    isTextSearch: true
+                });
+            }
+
+            return matches;
         });
 
         // Available months for date picker
@@ -1035,6 +1053,9 @@ createApp({
                     return monthMatches(txn.month, filter.text);
                 case 'tag':
                     return (merchant.tags || []).some(t => t.toLowerCase() === text);
+                case 'text':
+                    // Search transaction description
+                    return (txn.description || '').toLowerCase().includes(text);
                 default:
                     return false;
             }
@@ -1175,7 +1196,32 @@ createApp({
         }
 
         function filterTypeChar(type) {
-            return { category: 'c', merchant: 'm', location: 'l', month: 'd', tag: 't' }[type] || '?';
+            return { category: 'c', merchant: 'm', location: 'l', month: 'd', tag: 't', text: 's' }[type] || '?';
+        }
+
+        // Highlight search terms in transaction descriptions
+        function highlightDescription(description) {
+            if (!description) return '';
+            const textFilters = activeFilters.value.filter(f => f.type === 'text' && f.mode === 'include');
+            if (textFilters.length === 0) return escapeHtml(description);
+
+            let result = escapeHtml(description);
+            for (const filter of textFilters) {
+                const searchTerm = filter.text;
+                const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                result = result.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+            return result;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeRegex(text) {
+            return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
         function getLocationClass(location) {
@@ -1252,7 +1298,7 @@ createApp({
                 history.replaceState(null, '', location.pathname);
                 return;
             }
-            const typeChar = { category: 'c', merchant: 'm', location: 'l', month: 'd', tag: 't' };
+            const typeChar = { category: 'c', merchant: 'm', location: 'l', month: 'd', tag: 't', text: 's' };
             const parts = activeFilters.value.map(f => {
                 const mode = f.mode === 'exclude' ? '-' : '+';
                 return `${mode}${typeChar[f.type]}:${encodeURIComponent(f.text)}`;
@@ -1263,7 +1309,7 @@ createApp({
         function hashToFilters() {
             const hash = location.hash.slice(1);
             if (!hash) return;
-            const typeMap = { c: 'category', m: 'merchant', l: 'location', d: 'month', t: 'tag' };
+            const typeMap = { c: 'category', m: 'merchant', l: 'location', d: 'month', t: 'tag', s: 'text' };
             hash.split('&').forEach(part => {
                 const mode = part[0] === '-' ? 'exclude' : 'include';
                 const start = part[0] === '+' || part[0] === '-' ? 1 : 0;
@@ -1540,6 +1586,7 @@ createApp({
             addFilter, removeFilter, toggleFilterMode, clearFilters, addMonthFilter,
             toggleExpand, toggleSection, toggleSort, sortedMerchants,
             formatCurrency, formatDate, formatMonthLabel, formatPct, filterTypeChar, getLocationClass,
+            highlightDescription,
             onSearchInput, onSearchKeydown, selectAutocompleteItem,
             toggleTheme, scrollToExcluded
         };

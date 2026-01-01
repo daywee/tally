@@ -910,6 +910,12 @@ th[data-tooltip] { cursor: pointer; }
     overflow: hidden;
     text-overflow: ellipsis;
 }
+.txn-desc .search-highlight {
+    background: rgba(255, 200, 0, 0.4);
+    color: #fff;
+    padding: 0 2px;
+    border-radius: 2px;
+}
 .txn-amount {
     color: var(--accent-pink);
     font-family: monospace;
