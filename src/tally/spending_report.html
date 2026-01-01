@@ -11,9 +11,9 @@
         <div class="container">
             <!-- Header -->
             <header>
-                <h1>{{ title }}</h1>
+                <h1 data-testid="report-title">{{ title }}</h1>
                 <p class="subtitle">{{ subtitle }}</p>
-                <button class="theme-toggle" @click="toggleTheme" :title="isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'">
+                <button class="theme-toggle" data-testid="theme-toggle" @click="toggleTheme" :title="isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'">
                     {{ isDarkTheme ? '☀️' : '🌙' }}
                 </button>
             </header>
@@ -44,17 +44,18 @@
                         <option v-for="m in availableMonths" :key="m.key" :value="m.key">{{ m.label }}</option>
                     </optgroup>
                 </select>
-                <div class="filter-chips" v-if="activeFilters.length > 0">
+                <div class="filter-chips" v-if="activeFilters.length > 0" data-testid="filter-chips">
                     <div v-for="(filter, index) in activeFilters"
                          :key="index"
                          class="filter-chip"
                          :class="[filter.type, filter.mode]"
+                         data-testid="filter-chip"
                          @click="toggleFilterMode(index)">
                         <span class="chip-type">{{ filterTypeChar(filter.type) }}</span>
                         <span class="chip-text">{{ filter.displayText || filter.text }}</span>
-                        <span class="chip-remove" @click.stop="removeFilter(index)">&times;</span>
+                        <span class="chip-remove" data-testid="filter-chip-remove" @click.stop="removeFilter(index)">&times;</span>
                     </div>
-                    <button v-if="activeFilters.length > 1" class="clear-all-btn" @click="clearFilters">Clear all</button>
+                    <button v-if="activeFilters.length > 1" class="clear-all-btn" data-testid="clear-filters" @click="clearFilters">Clear all</button>
                 </div>
             </div>
 
@@ -76,9 +77,9 @@
 
             <!-- Summary Cards -->
             <div class="summary-grid">
-                <div class="card total">
+                <div class="card total" data-testid="total-spending-card">
                     <h2>Total Spending (YTD)</h2>
-                    <div class="amount">{{ formatCurrency(grandTotal) }}</div>
+                    <div class="amount" data-testid="total-spending-amount">{{ formatCurrency(grandTotal) }}</div>
                     <div class="breakdown">
                         <div class="breakdown-item" v-if="creditsTotal > 0">
                             <span class="name credit-label">Credits Applied</span>

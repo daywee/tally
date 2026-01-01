@@ -48,7 +48,7 @@ const MerchantSection = defineComponent({
         }
     },
     template: `
-        <section :class="[sectionKey.replace(':', '-') + '-section', 'category-section']">
+        <section :class="[sectionKey.replace(':', '-') + '-section', 'category-section']" :data-testid="'section-' + sectionKey.replace(':', '-')">
             <div class="section-header" @click="toggleSection(sectionKey)">
                 <h2>
                     <span class="toggle">{{ collapsedSections.has(sectionKey) ? '▶' : '▼' }}</span>
@@ -92,6 +92,7 @@ const MerchantSection = defineComponent({
                             <template v-for="(item, idx) in items" :key="item.id || idx">
                                 <tr class="merchant-row"
                                     :class="{ expanded: isExpanded(item.id || idx) }"
+                                    :data-testid="'merchant-row-' + (item.id || item.displayName || item.merchant || idx)"
                                     @click="toggleExpand(item.id || idx)">
                                     <td class="merchant" :class="{ clickable: categoryMode }">
                                         <span class="chevron">{{ isExpanded(item.id || idx) ? '▼' : '▶' }}</span>
@@ -151,13 +152,13 @@ const MerchantSection = defineComponent({
                                         {{ item.subcategory }}
                                     </td>
                                     <!-- Category mode: Count then Tags; Other modes: Tags then Count -->
-                                    <td v-if="categoryMode">{{ item.filteredCount || item.count }}</td>
+                                    <td v-if="categoryMode" data-testid="merchant-count">{{ item.filteredCount || item.count }}</td>
                                     <td class="tags-cell">
-                                        <span v-for="tag in getTags(item)" :key="tag" class="tag-badge"
+                                        <span v-for="tag in getTags(item)" :key="tag" class="tag-badge" data-testid="tag-badge"
                                               @click.stop="addFilter(tag, 'tag')">{{ tag }}</span>
                                     </td>
-                                    <td v-if="!categoryMode">{{ item.filteredCount || item.count }}</td>
-                                    <td class="money" :class="getAmountClass(item)">
+                                    <td v-if="!categoryMode" data-testid="merchant-count">{{ item.filteredCount || item.count }}</td>
+                                    <td class="money" :class="getAmountClass(item)" data-testid="merchant-total">
                                         {{ formatAmount(item) }}
                                     </td>
                                     <td v-if="categoryMode" class="pct">{{ formatPct(item.filteredTotal || item.total, categoryTotal || totalAmount) }}</td>
@@ -181,6 +182,7 @@ const MerchantSection = defineComponent({
                                                 <span v-for="tag in (txn.tags || [])"
                                                       :key="tag"
                                                       class="tag-badge"
+                                                      data-testid="tag-badge"
                                                       @click.stop="addFilter(tag, 'tag')">{{ tag }}</span>
                                             </span>
                                             <span class="txn-amount" :class="getTxnAmountClass(txn)">
