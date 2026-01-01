@@ -22,6 +22,7 @@ const MerchantSection = defineComponent({
         categoryMode: { type: Boolean, default: false },
         categoryTotal: { type: Number, default: 0 },
         grandTotal: { type: Number, default: 0 },
+        grossSpending: { type: Number, default: 0 },
         numMonths: { type: Number, default: 12 },
         headerColor: { type: String, default: '' },
         // Injected from parent
@@ -59,7 +60,7 @@ const MerchantSection = defineComponent({
                     <template v-if="categoryMode">
                         <span class="section-monthly">{{ formatCurrency(totalAmount / numMonths) }}/mo</span> ·
                         <span class="section-ytd">{{ formatCurrency(totalAmount) }}</span>
-                        <span class="section-pct">({{ formatPct(totalAmount, grandTotal) }})</span>
+                        <span class="section-pct">({{ formatPct(totalAmount, grossSpending) }})</span>
                     </template>
                     <template v-else>
                         <span v-if="showTotal" class="section-ytd credit-amount">+{{ formatCurrency(totalAmount) }}</span>
@@ -1587,7 +1588,7 @@ createApp({
             // Computed
             spendingData, title, subtitle,
             visibleSections, filteredCategoryView, positiveCategoryView, creditMerchants, filteredSectionView, hasSections,
-            sectionTotals, grandTotal, creditsTotal, uncategorizedTotal,
+            sectionTotals, grandTotal, grossSpending, creditsTotal, uncategorizedTotal,
             numFilteredMonths, filteredAutocomplete, availableMonths,
             categoryColorMap,
             // Excluded transactions

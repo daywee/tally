@@ -92,34 +92,34 @@
                     </div>
                 </div>
                 <!-- Cash Flow card - show when there's income -->
-                <div class="card cashflow" v-if="incomeCount > 0">
+                <div class="card cashflow" v-if="incomeCount > 0" data-testid="cashflow-card">
                     <h2>Cash Flow</h2>
-                    <div class="amount" :class="{ positive: netCashFlow >= 0, negative: netCashFlow < 0 }">
+                    <div class="amount" data-testid="cashflow-amount" :class="{ positive: netCashFlow >= 0, negative: netCashFlow < 0 }">
                         {{ netCashFlow >= 0 ? '+' : '' }}{{ formatCurrency(netCashFlow) }}
                     </div>
                     <div class="breakdown">
                         <div class="breakdown-item clickable" @click="addFilter('income', 'tag')">
                             <span class="name income-label">Income</span>
-                            <span class="value">+{{ formatCurrency(Math.abs(incomeTotal)) }}</span>
+                            <span class="value" data-testid="income-amount">+{{ formatCurrency(Math.abs(incomeTotal)) }}</span>
                         </div>
                         <div class="breakdown-item">
                             <span class="name">Spending</span>
-                            <span class="value">-{{ formatCurrency(grandTotal) }}</span>
+                            <span class="value" data-testid="spending-in-cashflow">-{{ formatCurrency(grandTotal) }}</span>
                         </div>
                         <div class="breakdown-item clickable" v-if="transfersCount > 0" @click="addFilter('transfer', 'tag')">
                             <span class="name transfers-label">Transfers</span>
-                            <span class="value">-{{ formatCurrency(Math.abs(transfersTotal)) }}</span>
+                            <span class="value" data-testid="transfers-amount">-{{ formatCurrency(Math.abs(transfersTotal)) }}</span>
                         </div>
                     </div>
                 </div>
                 <!-- Excluded card - show when there are excluded but no income -->
-                <div class="card excluded-summary" v-else-if="filteredExcludedCount > 0">
+                <div class="card excluded-summary" v-else-if="filteredExcludedCount > 0" data-testid="excluded-card">
                     <h2>Excluded</h2>
-                    <div class="amount">{{ formatCurrency(excludedTotal) }}</div>
+                    <div class="amount" data-testid="excluded-total">{{ formatCurrency(excludedTotal) }}</div>
                     <div class="breakdown">
-                        <div class="breakdown-item clickable" @click="scrollToExcluded">
+                        <div class="breakdown-item clickable" data-testid="show-excluded-link" @click="scrollToExcluded">
                             <span class="name">Not included in spending</span>
-                            <span class="value">{{ filteredExcludedCount }} transactions</span>
+                            <span class="value" data-testid="excluded-count">{{ filteredExcludedCount }} transactions</span>
                         </div>
                     </div>
                 </div>
@@ -178,6 +178,7 @@
                     :total-amount="section.filteredTotal"
                     :category-total="section.filteredTotal"
                     :grand-total="grandTotal"
+                    :gross-spending="grossSpending"
                     :num-months="numFilteredMonths"
                     :category-mode="true"
                     :collapsed-sections="collapsedSections"
@@ -205,6 +206,7 @@
                     :total-amount="category.filteredTotal"
                     :category-total="category.filteredTotal"
                     :grand-total="grandTotal"
+                    :gross-spending="grossSpending"
                     :num-months="numFilteredMonths"
                     :header-color="categoryColorMap[categoryName]"
                     :category-mode="true"
