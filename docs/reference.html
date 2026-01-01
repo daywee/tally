@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference - Tally</title>
+    <meta name="description" content="Complete reference for Tally's merchants.rules and views.rules syntax. Match functions, conditions, tags, and filter expressions.">
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a1f0a 0%, #0d2818 50%, #061a12 100%);
+            color: #fff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        nav .nav-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4ade80;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav .nav-logo img {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        nav .nav-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        nav .nav-links a:hover,
+        nav .nav-links a.active {
+            color: #4ade80;
+        }
+
+        nav .nav-github {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        nav .nav-github:hover {
+            color: #4ade80;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem 5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .toc {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .toc-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 1rem;
+        }
+
+        .toc-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 2rem;
+        }
+
+        .toc a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            padding: 0.25rem 0;
+        }
+
+        .toc a:hover {
+            color: #4ade80;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            margin: 3rem 0 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+            border-top: none;
+            padding-top: 0;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.95);
+            margin: 2rem 0 0.75rem;
+        }
+
+        p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1rem;
+        }
+
+        pre {
+            background: #0d0d0d;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 1rem 0 1.5rem;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        pre code {
+            color: #e0e0e0;
+        }
+
+        p code {
+            background: rgba(255,255,255,0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .comment {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .highlight {
+            color: #4ade80;
+        }
+
+        .keyword {
+            color: #60a5fa;
+        }
+
+        .string {
+            color: #fbbf24;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        th {
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            color: rgba(255,255,255,0.8);
+        }
+
+        td code {
+            background: rgba(255,255,255,0.08);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            color: #4ade80;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .note {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .note-title {
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .note p {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            nav .nav-inner {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            nav .nav-links {
+                order: 3;
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            h1 { font-size: 2rem; }
+            .container { padding: 2rem 1.5rem 3rem; }
+            .toc-columns { grid-template-columns: 1fr; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo"><img src="logo.svg" alt="Tally">tally</a>
+            <div class="nav-links">
+                <a href="quickstart.html">Quick Start</a>
+                <a href="guide.html">Guide</a>
+                <a href="reference.html" class="active">Reference</a>
+                <a href="formats.html">Formats</a>
+            </div>
+            <a href="https://github.com/davidfowl/tally" class="nav-github">GitHub</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Reference</h1>
+        <p class="subtitle">Complete syntax for merchants.rules and views.rules</p>
+
+        <div class="toc">
+            <div class="toc-title">Contents</div>
+            <div class="toc-columns">
+                <div>
+                    <a href="#merchants-rules">Merchants Rules</a>
+                    <a href="#match-functions">Match Functions</a>
+                    <a href="#conditions">Amount &amp; Date Conditions</a>
+                    <a href="#combining">Combining Conditions</a>
+                    <a href="#custom-fields">Custom CSV Fields</a>
+                    <a href="#extraction">Extraction Functions</a>
+                </div>
+                <div>
+                    <a href="#variables">Variables</a>
+                    <a href="#transforms">Field Transforms</a>
+                    <a href="#special-tags">Special Tags</a>
+                    <a href="#dynamic-tags">Dynamic Tags</a>
+                    <a href="#views-rules">Views Rules</a>
+                    <a href="#view-functions">View Functions</a>
+                </div>
+            </div>
+        </div>
+
+        <h2 id="merchants-rules">Merchants Rules</h2>
+        <p>File: <code>config/merchants.rules</code></p>
+        <p>Categorize transactions by matching descriptions to patterns.</p>
+
+        <h3>Rule Structure</h3>
+        <pre><code><span class="highlight">[Rule Name]</span>              <span class="comment"># Display name for matched transactions</span>
+<span class="keyword">match:</span> &lt;expression&gt;      <span class="comment"># Required: when to apply this rule</span>
+<span class="keyword">category:</span> &lt;Category&gt;     <span class="comment"># Required: primary grouping</span>
+<span class="keyword">subcategory:</span> &lt;Sub&gt;       <span class="comment"># Optional: secondary grouping</span>
+<span class="keyword">tags:</span> tag1, tag2         <span class="comment"># Optional: labels for filtering</span></code></pre>
+
+        <h3>Example</h3>
+        <pre><code><span class="highlight">[Netflix]</span>
+<span class="keyword">match:</span> contains(<span class="string">"NETFLIX"</span>)
+<span class="keyword">category:</span> Subscriptions
+<span class="keyword">subcategory:</span> Streaming
+<span class="keyword">tags:</span> entertainment, recurring
+
+<span class="highlight">[Costco Grocery]</span>
+<span class="keyword">match:</span> contains(<span class="string">"COSTCO"</span>) and amount &lt;= 200
+<span class="keyword">category:</span> Food
+<span class="keyword">subcategory:</span> Grocery
+
+<span class="highlight">[Costco Bulk]</span>
+<span class="keyword">match:</span> contains(<span class="string">"COSTCO"</span>) and amount &gt; 200
+<span class="keyword">category:</span> Shopping
+<span class="keyword">subcategory:</span> Wholesale</code></pre>
+
+        <h2 id="match-functions">Match Functions</h2>
+        <p>All match functions search <code>description</code> by default. Add an optional first argument to search a custom field.</p>
+
+        <table>
+            <tr>
+                <th>Function</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>contains("text")</code></td>
+                <td>Case-insensitive substring match</td>
+            </tr>
+            <tr>
+                <td><code>regex("pattern")</code></td>
+                <td>Perl-compatible regex</td>
+            </tr>
+            <tr>
+                <td><code>normalized("text")</code></td>
+                <td>Ignores spaces, hyphens, punctuation</td>
+            </tr>
+            <tr>
+                <td><code>anyof("a", "b", ...)</code></td>
+                <td>Match any of multiple patterns</td>
+            </tr>
+            <tr>
+                <td><code>startswith("text")</code></td>
+                <td>Match only at beginning</td>
+            </tr>
+            <tr>
+                <td><code>fuzzy("text")</code></td>
+                <td>Approximate matching (80% similar)</td>
+            </tr>
+            <tr>
+                <td><code>fuzzy("text", 0.90)</code></td>
+                <td>Fuzzy with custom threshold</td>
+            </tr>
+        </table>
+
+        <h3>Examples</h3>
+        <pre><code><span class="comment"># Case-insensitive substring</span>
+<span class="keyword">match:</span> contains(<span class="string">"NETFLIX"</span>)
+<span class="comment"># Matches: NETFLIX.COM, netflix, Netflix Inc</span>
+
+<span class="comment"># Regex with negative lookahead</span>
+<span class="keyword">match:</span> regex(<span class="string">"UBER\\s(?!EATS)"</span>)
+<span class="comment"># Matches: UBER TRIP, but not UBER EATS</span>
+
+<span class="comment"># Ignore formatting differences</span>
+<span class="keyword">match:</span> normalized(<span class="string">"WHOLEFOODS"</span>)
+<span class="comment"># Matches: WHOLE FOODS, WHOLE-FOODS, WHOLEFDS</span>
+
+<span class="comment"># Match multiple patterns</span>
+<span class="keyword">match:</span> anyof(<span class="string">"NETFLIX"</span>, <span class="string">"HULU"</span>, <span class="string">"HBO"</span>)
+
+<span class="comment"># Search custom field</span>
+<span class="keyword">match:</span> contains(field.memo, <span class="string">"REF"</span>)</code></pre>
+
+        <h2 id="conditions">Amount &amp; Date Conditions</h2>
+        <table>
+            <tr>
+                <th>Condition</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>amount &gt; 100</code></td>
+                <td>Transactions over $100</td>
+            </tr>
+            <tr>
+                <td><code>amount &lt;= 50</code></td>
+                <td>Transactions $50 or less</td>
+            </tr>
+            <tr>
+                <td><code>amount &lt; 0</code></td>
+                <td>Credits/refunds (negative amounts)</td>
+            </tr>
+            <tr>
+                <td><code>month == 12</code></td>
+                <td>December transactions only</td>
+            </tr>
+            <tr>
+                <td><code>month &gt;= 11</code></td>
+                <td>November and December</td>
+            </tr>
+            <tr>
+                <td><code>year == 2024</code></td>
+                <td>Specific year</td>
+            </tr>
+            <tr>
+                <td><code>day == 1</code></td>
+                <td>First of the month</td>
+            </tr>
+            <tr>
+                <td><code>date &gt;= "2024-01-01"</code></td>
+                <td>On or after a specific date</td>
+            </tr>
+        </table>
+
+        <h2 id="combining">Combining Conditions</h2>
+        <table>
+            <tr>
+                <th>Operator</th>
+                <th>Description</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><code>and</code></td>
+                <td>Both must be true</td>
+                <td><code>contains("COSTCO") and amount &gt; 200</code></td>
+            </tr>
+            <tr>
+                <td><code>or</code></td>
+                <td>Either can be true</td>
+                <td><code>contains("SHELL") or contains("CHEVRON")</code></td>
+            </tr>
+            <tr>
+                <td><code>not</code></td>
+                <td>Negates condition</td>
+                <td><code>contains("UBER") and not contains("EATS")</code></td>
+            </tr>
+            <tr>
+                <td><code>( )</code></td>
+                <td>Group conditions</td>
+                <td><code>(contains("AMAZON") or contains("AMZN")) and amount &gt; 100</code></td>
+            </tr>
+        </table>
+
+        <h2 id="custom-fields">Custom CSV Fields</h2>
+        <p>Access fields captured from CSV format strings using <code>field.&lt;name&gt;</code>:</p>
+        <pre><code><span class="comment"># In settings.yaml:</span>
+<span class="keyword">format:</span> <span class="string">"{date},{txn_type},{memo},{vendor},{amount}"</span>
+<span class="keyword">columns:</span>
+  <span class="keyword">description:</span> <span class="string">"{vendor}"</span>
+
+<span class="comment"># In merchants.rules:</span>
+<span class="highlight">[Wire Transfer]</span>
+<span class="keyword">match:</span> field.txn_type == <span class="string">"WIRE"</span>
+<span class="keyword">category:</span> Transfers
+
+<span class="highlight">[Invoice Payment]</span>
+<span class="keyword">match:</span> contains(field.memo, <span class="string">"Invoice"</span>)
+<span class="keyword">category:</span> Bills</code></pre>
+
+        <p>Use <code>exists(field.name)</code> to safely check if a field exists:</p>
+        <pre><code><span class="keyword">match:</span> exists(field.memo) and contains(field.memo, <span class="string">"REF"</span>)</code></pre>
+
+        <h2 id="extraction">Extraction Functions</h2>
+        <table>
+            <tr>
+                <th>Function</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>extract("pattern")</code></td>
+                <td>Extract first regex capture group</td>
+            </tr>
+            <tr>
+                <td><code>split("-", 0)</code></td>
+                <td>Split by delimiter, get element at index</td>
+            </tr>
+            <tr>
+                <td><code>substring(0, 4)</code></td>
+                <td>Extract substring by position</td>
+            </tr>
+            <tr>
+                <td><code>trim()</code></td>
+                <td>Remove leading/trailing whitespace</td>
+            </tr>
+            <tr>
+                <td><code>exists(field.x)</code></td>
+                <td>Check if field exists and is non-empty</td>
+            </tr>
+        </table>
+
+        <h2 id="variables">Variables</h2>
+        <p>Define reusable conditions at the top of your file:</p>
+        <pre><code><span class="comment"># Define variables</span>
+is_large = amount &gt; 500
+is_holiday = month &gt;= 11 and month &lt;= 12
+is_coffee = anyof(<span class="string">"STARBUCKS"</span>, <span class="string">"PEETS"</span>, <span class="string">"PHILZ"</span>)
+
+<span class="comment"># Use in rules</span>
+<span class="highlight">[Holiday Splurge]</span>
+<span class="keyword">match:</span> is_large and is_holiday
+<span class="keyword">category:</span> Shopping</code></pre>
+
+        <h2 id="transforms">Field Transforms</h2>
+        <p>Mutate field values before matching. Place at the top of your file:</p>
+        <pre><code><span class="comment"># Strip common prefixes</span>
+field.description = regex_replace(field.description, <span class="string">"^APLPAY\\s+"</span>, <span class="string">""</span>)
+field.description = regex_replace(field.description, <span class="string">"^SQ\\*\\s*"</span>, <span class="string">""</span>)
+field.memo = trim(field.memo)</code></pre>
+
+        <table>
+            <tr>
+                <th>Function</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>regex_replace(text, pattern, repl)</code></td>
+                <td>Regex substitution (replaces all matches)</td>
+            </tr>
+            <tr>
+                <td><code>uppercase(text)</code></td>
+                <td>Convert to uppercase</td>
+            </tr>
+            <tr>
+                <td><code>lowercase(text)</code></td>
+                <td>Convert to lowercase</td>
+            </tr>
+            <tr>
+                <td><code>strip_prefix(text, prefix)</code></td>
+                <td>Remove prefix (case-insensitive)</td>
+            </tr>
+            <tr>
+                <td><code>strip_suffix(text, suffix)</code></td>
+                <td>Remove suffix (case-insensitive)</td>
+            </tr>
+            <tr>
+                <td><code>trim(text)</code></td>
+                <td>Remove leading/trailing whitespace</td>
+            </tr>
+        </table>
+
+        <div class="note">
+            <div class="note-title">Note</div>
+            <p>Original values are preserved in <code>_raw_&lt;field&gt;</code> (e.g., <code>_raw_description</code>).</p>
+        </div>
+
+        <h2 id="special-tags">Special Tags</h2>
+        <p>These tags have special meaning in the spending report:</p>
+        <table>
+            <tr>
+                <th>Tag</th>
+                <th>Effect</th>
+            </tr>
+            <tr>
+                <td><code>income</code></td>
+                <td>Excluded from spending totals (salary, deposits)</td>
+            </tr>
+            <tr>
+                <td><code>transfer</code></td>
+                <td>Excluded from spending totals (CC payments, transfers)</td>
+            </tr>
+            <tr>
+                <td><code>refund</code></td>
+                <td>Shown in "Credits Applied" section, nets against spending</td>
+            </tr>
+        </table>
+
+        <h2 id="dynamic-tags">Dynamic Tags</h2>
+        <p>Use <code>{expression}</code> to create tags from field values:</p>
+        <pre><code><span class="highlight">[Bank Transaction]</span>
+<span class="keyword">match:</span> contains(<span class="string">"BANK"</span>)
+<span class="keyword">category:</span> Transfers
+<span class="keyword">tags:</span> banking, {field.txn_type}     <span class="comment"># → "banking", "wire" or "ach"</span>
+
+<span class="highlight">[All Purchases]</span>
+<span class="keyword">match:</span> *
+<span class="keyword">tags:</span> {source}                      <span class="comment"># → "alice-amex", "bob-chase", etc.</span></code></pre>
+
+        <h2 id="tag-only-rules">Tag-Only Rules</h2>
+        <p>Rules without <code>category:</code> add tags without affecting categorization:</p>
+        <pre><code><span class="highlight">[Large Purchase]</span>
+<span class="keyword">match:</span> amount &gt; 500
+<span class="keyword">tags:</span> large, review              <span class="comment"># No category - just adds tags</span>
+
+<span class="highlight">[Holiday Season]</span>
+<span class="keyword">match:</span> month &gt;= 11 and month &lt;= 12
+<span class="keyword">tags:</span> holiday</code></pre>
+
+        <div class="note">
+            <div class="note-title">Two-pass matching</div>
+            <p>First rule with <code>category:</code> sets the category. Tags are collected from ALL matching rules.</p>
+        </div>
+
+        <h2 id="rule-priority">Rule Priority</h2>
+        <p>First categorization rule wins. Put specific patterns before general ones:</p>
+        <pre><code><span class="highlight">[Uber Eats]</span>                    <span class="comment"># More specific, checked first</span>
+<span class="keyword">match:</span> contains(<span class="string">"UBER EATS"</span>)
+<span class="keyword">category:</span> Food
+
+<span class="highlight">[Uber Rides]</span>                   <span class="comment"># Less specific, checked second</span>
+<span class="keyword">match:</span> contains(<span class="string">"UBER"</span>)
+<span class="keyword">category:</span> Transportation</code></pre>
+
+        <h2 id="views-rules">Views Rules</h2>
+        <p>File: <code>config/views.rules</code></p>
+        <p>Create custom sections in the spending report.</p>
+
+        <h3>View Structure</h3>
+        <pre><code><span class="highlight">[View Name]</span>                <span class="comment"># Section header in report</span>
+<span class="keyword">description:</span> &lt;text&gt;        <span class="comment"># Optional: subtitle under header</span>
+<span class="keyword">filter:</span> &lt;expression&gt;       <span class="comment"># Required: which merchants to include</span></code></pre>
+
+        <h3>Filter Primitives</h3>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>months</code></td>
+                <td>int</td>
+                <td>Number of months with transactions</td>
+            </tr>
+            <tr>
+                <td><code>payments</code></td>
+                <td>int</td>
+                <td>Total number of transactions</td>
+            </tr>
+            <tr>
+                <td><code>total</code></td>
+                <td>float</td>
+                <td>Total spending for this merchant</td>
+            </tr>
+            <tr>
+                <td><code>cv</code></td>
+                <td>float</td>
+                <td>Coefficient of variation (0 = consistent)</td>
+            </tr>
+            <tr>
+                <td><code>category</code></td>
+                <td>str</td>
+                <td>Merchant category</td>
+            </tr>
+            <tr>
+                <td><code>subcategory</code></td>
+                <td>str</td>
+                <td>Merchant subcategory</td>
+            </tr>
+            <tr>
+                <td><code>tags</code></td>
+                <td>set</td>
+                <td>Merchant tags (use <code>has</code> to check)</td>
+            </tr>
+        </table>
+
+        <h2 id="view-functions">View Functions</h2>
+        <table>
+            <tr>
+                <th>Function</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>sum()</code>, <code>avg()</code>, <code>count()</code></td>
+                <td>Aggregation functions</td>
+            </tr>
+            <tr>
+                <td><code>min()</code>, <code>max()</code>, <code>stddev()</code></td>
+                <td>Statistical functions</td>
+            </tr>
+            <tr>
+                <td><code>by("month")</code></td>
+                <td>Group transactions by month</td>
+            </tr>
+            <tr>
+                <td><code>by("year")</code></td>
+                <td>Group transactions by year</td>
+            </tr>
+        </table>
+
+        <h3>Grouping with by()</h3>
+        <pre><code><span class="comment"># Monthly grouping</span>
+by(<span class="string">"month"</span>)              <span class="comment"># [[100, 200], [150], [175, 125]] - grouped payments</span>
+sum(by(<span class="string">"month"</span>))         <span class="comment"># [300, 150, 300] - monthly totals</span>
+avg(sum(by(<span class="string">"month"</span>)))    <span class="comment"># 250 - average monthly spend</span>
+max(sum(by(<span class="string">"month"</span>)))    <span class="comment"># 300 - highest spending month</span></code></pre>
+
+        <h3>View Examples</h3>
+        <pre><code><span class="highlight">[Every Month]</span>
+<span class="keyword">description:</span> Consistent recurring (rent, utilities, subscriptions)
+<span class="keyword">filter:</span> months &gt;= 6 and cv &lt; 0.3
+
+<span class="highlight">[Variable Recurring]</span>
+<span class="keyword">description:</span> Frequent but inconsistent (groceries, shopping)
+<span class="keyword">filter:</span> months &gt;= 6 and cv &gt;= 0.3
+
+<span class="highlight">[Large Purchases]</span>
+<span class="keyword">description:</span> Big one-time expenses
+<span class="keyword">filter:</span> total &gt; 1000 and months &lt;= 2
+
+<span class="highlight">[Business]</span>
+<span class="keyword">description:</span> Expenses to submit for reimbursement
+<span class="keyword">filter:</span> tags has <span class="string">"business"</span>
+
+<span class="highlight">[Streaming]</span>
+<span class="keyword">filter:</span> category == <span class="string">"Subscriptions"</span> and subcategory == <span class="string">"Streaming"</span></code></pre>
+
+        <div class="note">
+            <div class="note-title">Views vs Categories</div>
+            <p><strong>Categories</strong> (in merchants.rules) define WHAT a transaction is. Each transaction has exactly one category.<br>
+            <strong>Views</strong> (in views.rules) define HOW to group for reporting. Same merchant can appear in multiple views.</p>
+        </div>
+    </div>
+</body>
+</html>

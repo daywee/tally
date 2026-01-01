@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start - Tally</title>
+    <meta name="description" content="Get started with Tally in 5 minutes. Install, configure, and generate your first spending report.">
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a1f0a 0%, #0d2818 50%, #061a12 100%);
+            color: #fff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        nav .nav-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4ade80;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav .nav-logo img {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        nav .nav-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        nav .nav-links a:hover,
+        nav .nav-links a.active {
+            color: #4ade80;
+        }
+
+        nav .nav-github {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        nav .nav-github:hover {
+            color: #4ade80;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 2rem 5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            margin: 2.5rem 0 1rem;
+            padding-top: 1rem;
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+        }
+
+        p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1rem;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            font-weight: 600;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 1.75rem;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+
+        pre {
+            background: #0d0d0d;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 1rem 0 1.5rem;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        pre code {
+            color: #e0e0e0;
+        }
+
+        .cmd::before {
+            content: '$ ';
+            color: #4ade80;
+        }
+
+        .comment {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .highlight {
+            color: #4ade80;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            color: #4ade80;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .next-steps {
+            background: rgba(74, 222, 128, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .next-steps h3 {
+            color: #4ade80;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .next-steps a {
+            display: block;
+            padding: 0.5rem 0;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .next-steps a:hover {
+            color: #4ade80;
+        }
+
+        @media (max-width: 768px) {
+            nav .nav-inner {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            nav .nav-links {
+                order: 3;
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            h1 { font-size: 2rem; }
+            .container { padding: 2rem 1.5rem 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo"><img src="logo.svg" alt="Tally">tally</a>
+            <div class="nav-links">
+                <a href="quickstart.html" class="active">Quick Start</a>
+                <a href="guide.html">Guide</a>
+                <a href="reference.html">Reference</a>
+                <a href="formats.html">Formats</a>
+            </div>
+            <a href="https://github.com/davidfowl/tally" class="nav-github">GitHub</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Quick Start</h1>
+        <p class="subtitle">Get Tally running in 5 minutes</p>
+
+        <h2><span class="step-number">1</span> Install Tally</h2>
+        <p>Choose your platform:</p>
+        <pre><code><span class="comment"># Linux / macOS</span>
+<span class="cmd">curl -fsSL https://tallyai.money/install.sh | bash</span>
+
+<span class="comment"># Windows PowerShell</span>
+<span class="cmd">irm https://tallyai.money/install.ps1 | iex</span></code></pre>
+
+        <h2><span class="step-number">2</span> Create a Budget Folder</h2>
+        <p>Initialize a new folder to hold your configuration and data:</p>
+        <pre><code><span class="cmd">tally init ./my-budget</span>
+<span class="cmd">cd my-budget</span></code></pre>
+        <p>This creates:</p>
+        <ul>
+            <li><code>settings.yaml</code> - Configuration file</li>
+            <li><code>config/merchants.rules</code> - Transaction categorization rules</li>
+            <li><code>data/</code> - Folder for your CSV files</li>
+            <li><code>AGENTS.md</code> - Instructions for AI assistants</li>
+        </ul>
+
+        <h2><span class="step-number">3</span> Add Your Bank CSVs</h2>
+        <p>Download transaction exports from your bank and credit cards, then copy them to the <code>data/</code> folder.</p>
+
+        <h2><span class="step-number">4</span> Configure Data Sources</h2>
+        <p>Edit <code>settings.yaml</code> to point to your CSV files:</p>
+        <pre><code><span class="highlight">year:</span> 2025
+
+<span class="highlight">data_sources:</span>
+  - <span class="highlight">name:</span> Chase
+    <span class="highlight">file:</span> data/chase.csv
+    <span class="highlight">format:</span> "{date:%m/%d/%Y},{description},{amount}"
+
+  - <span class="highlight">name:</span> Bank of America
+    <span class="highlight">file:</span> data/bofa.csv
+    <span class="highlight">format:</span> "{date:%m/%d/%Y},{description},{amount}"</code></pre>
+        <p>Use <code>tally inspect data/yourfile.csv</code> to see the CSV structure and get format suggestions.</p>
+
+        <h2><span class="step-number">5</span> Run the Workflow</h2>
+        <p>Check what to do next:</p>
+        <pre><code><span class="cmd">tally workflow</span></code></pre>
+        <p>This command detects your setup state and shows context-aware instructions. If you have an AI assistant (Claude Code, Copilot, Cursor), it will guide it through categorizing your transactions.</p>
+
+        <h2><span class="step-number">6</span> Generate Your Report</h2>
+        <p>Once transactions are categorized:</p>
+        <pre><code><span class="cmd">tally run</span></code></pre>
+        <p>This generates an HTML spending report with all your transactions organized by category, recurring expenses identified, and monthly trends visualized.</p>
+
+        <div class="next-steps">
+            <h3>Next Steps</h3>
+            <a href="guide.html">Guide &rarr; Learn how to use Tally with an AI assistant</a>
+            <a href="formats.html">Formats &rarr; Understand settings.yaml and format strings</a>
+            <a href="reference.html">Reference &rarr; Full merchants.rules and views.rules syntax</a>
+        </div>
+    </div>
+</body>
+</html>

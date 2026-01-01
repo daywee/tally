@@ -22,4 +22,28 @@
             <image:title>Tally Logo</image:title>
         </image:image>
     </url>
+    <url>
+        <loc>https://tallyai.money/quickstart.html</loc>
+        <lastmod>2026-01-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://tallyai.money/guide.html</loc>
+        <lastmod>2026-01-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://tallyai.money/reference.html</loc>
+        <lastmod>2026-01-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://tallyai.money/formats.html</loc>
+        <lastmod>2026-01-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
 </urlset>

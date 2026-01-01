@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formats - Tally</title>
+    <meta name="description" content="Tally configuration file formats. settings.yaml structure, data source format strings, and account types.">
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a1f0a 0%, #0d2818 50%, #061a12 100%);
+            color: #fff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        nav .nav-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4ade80;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav .nav-logo img {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        nav .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        nav .nav-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        nav .nav-links a:hover,
+        nav .nav-links a.active {
+            color: #4ade80;
+        }
+
+        nav .nav-github {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        nav .nav-github:hover {
+            color: #4ade80;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem 5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .toc {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .toc-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 1rem;
+        }
+
+        .toc a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: block;
+            padding: 0.25rem 0;
+        }
+
+        .toc a:hover {
+            color: #4ade80;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #fff;
+            margin: 3rem 0 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+            border-top: none;
+            padding-top: 0;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.95);
+            margin: 2rem 0 0.75rem;
+        }
+
+        p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1rem;
+        }
+
+        pre {
+            background: #0d0d0d;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 1rem 0 1.5rem;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        pre code {
+            color: #e0e0e0;
+        }
+
+        p code {
+            background: rgba(255,255,255,0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .comment {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .highlight {
+            color: #4ade80;
+        }
+
+        .keyword {
+            color: #60a5fa;
+        }
+
+        .string {
+            color: #fbbf24;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        th {
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            color: rgba(255,255,255,0.8);
+        }
+
+        td code {
+            background: rgba(255,255,255,0.08);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        ul, ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            color: #4ade80;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .note {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .note-title {
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .note p {
+            margin-bottom: 0;
+        }
+
+        .tip {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .tip-title {
+            color: #4ade80;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .tip p {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            nav .nav-inner {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            nav .nav-links {
+                order: 3;
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            h1 { font-size: 2rem; }
+            .container { padding: 2rem 1.5rem 3rem; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo"><img src="logo.svg" alt="Tally">tally</a>
+            <div class="nav-links">
+                <a href="quickstart.html">Quick Start</a>
+                <a href="guide.html">Guide</a>
+                <a href="reference.html">Reference</a>
+                <a href="formats.html" class="active">Formats</a>
+            </div>
+            <a href="https://github.com/davidfowl/tally" class="nav-github">GitHub</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Formats</h1>
+        <p class="subtitle">Configuration file structure and syntax</p>
+
+        <div class="toc">
+            <div class="toc-title">Contents</div>
+            <a href="#settings-yaml">settings.yaml</a>
+            <a href="#data-sources">Data Sources</a>
+            <a href="#format-strings">Format Strings</a>
+            <a href="#date-formats">Date Formats</a>
+            <a href="#currency">Currency Format</a>
+            <a href="#travel">Travel Detection</a>
+            <a href="#commands">CLI Commands</a>
+        </div>
+
+        <h2 id="settings-yaml">settings.yaml</h2>
+        <p>The main configuration file. Created by <code>tally init</code>.</p>
+
+        <pre><code><span class="highlight">year:</span> 2025
+
+<span class="highlight">currency_format:</span> <span class="string">"${amount}"</span>  <span class="comment"># Optional: defaults to $</span>
+
+<span class="highlight">merchants_file:</span> config/merchants.rules
+<span class="highlight">views_file:</span> config/views.rules    <span class="comment"># Optional: custom report sections</span>
+
+<span class="highlight">data_sources:</span>
+  - <span class="highlight">name:</span> Chase
+    <span class="highlight">file:</span> data/chase.csv
+    <span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{description},{amount}"</span>
+
+  - <span class="highlight">name:</span> Bank of America
+    <span class="highlight">file:</span> data/bofa.csv
+    <span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{description},{amount}"</span></code></pre>
+
+        <h2 id="data-sources">Data Sources</h2>
+        <p>Each data source represents a CSV file from a bank or credit card.</p>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Required</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>name</code></td>
+                <td>Yes</td>
+                <td>Display name (e.g., "Chase", "AMEX Gold")</td>
+            </tr>
+            <tr>
+                <td><code>file</code></td>
+                <td>Yes</td>
+                <td>Path to CSV file (relative or absolute)</td>
+            </tr>
+            <tr>
+                <td><code>format</code></td>
+                <td>Yes</td>
+                <td>Format string describing CSV columns</td>
+            </tr>
+            <tr>
+                <td><code>decimal_separator</code></td>
+                <td>No</td>
+                <td>For European format: <code>","</code> (1.234,56)</td>
+            </tr>
+            <tr>
+                <td><code>columns</code></td>
+                <td>No</td>
+                <td>Custom column mappings (see Format Strings)</td>
+            </tr>
+            <tr>
+                <td><code>delimiter</code></td>
+                <td>No</td>
+                <td>Column delimiter: <code>tab</code>, <code>whitespace</code>, or <code>regex:pattern</code></td>
+            </tr>
+            <tr>
+                <td><code>has_header</code></td>
+                <td>No</td>
+                <td>Set to <code>false</code> if file has no header row</td>
+            </tr>
+        </table>
+
+        <h3>Non-CSV Files</h3>
+        <p>For tab-separated, whitespace-delimited, or fixed-width formats, use the <code>delimiter</code> option:</p>
+        <pre><code><span class="comment"># Tab-separated file</span>
+<span class="highlight">- name:</span> Bank Statement
+  <span class="highlight">file:</span> data/stmt.tsv
+  <span class="highlight">delimiter:</span> tab
+  <span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{description},{amount}"</span>
+
+<span class="comment"># Fixed-width with regex capture groups</span>
+<span class="highlight">- name:</span> BOA Statement
+  <span class="highlight">file:</span> data/stmt.txt
+  <span class="highlight">delimiter:</span> <span class="string">"regex:^(\\d{2}/\\d{2}/\\d{4})\\s+(.+?)\\s+([-\\d,]+\\.\\d{2})\\s+([\\d,]+\\.\\d{2})$"</span>
+  <span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{description},{-amount},{_}"</span>
+  <span class="highlight">has_header:</span> false</code></pre>
+        <p>Regex delimiters use capture groups <code>()</code> to extract columns. Each group becomes a column matched by the format string.</p>
+
+        <h2 id="format-strings">Format Strings</h2>
+        <p>Format strings describe how to parse each CSV column. They map your CSV structure to the fields Tally needs.</p>
+
+        <h3>Basic Tokens</h3>
+        <table>
+            <tr>
+                <th>Token</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>{date:%m/%d/%Y}</code></td>
+                <td>Date with format specifier</td>
+            </tr>
+            <tr>
+                <td><code>{description}</code></td>
+                <td>Transaction description</td>
+            </tr>
+            <tr>
+                <td><code>{amount}</code></td>
+                <td>Amount column (keep sign as-is)</td>
+            </tr>
+            <tr>
+                <td><code>{-amount}</code></td>
+                <td>Amount column (negate the value)</td>
+            </tr>
+            <tr>
+                <td><code>{+amount}</code></td>
+                <td>Amount column (take absolute value)</td>
+            </tr>
+            <tr>
+                <td><code>{_}</code></td>
+                <td>Skip this column</td>
+            </tr>
+            <tr>
+                <td><code>{custom_name}</code></td>
+                <td>Capture column as custom field</td>
+            </tr>
+            <tr>
+                <td><code>{location}</code></td>
+                <td>Location code for travel detection</td>
+            </tr>
+        </table>
+
+        <h3>Amount Signs</h3>
+        <p>Different banks format amounts differently. Use the right token:</p>
+        <pre><code><span class="comment"># Charges are positive, payments are negative (most credit cards)</span>
+<span class="highlight">format:</span> <span class="string">"{date},{description},{amount}"</span>
+
+<span class="comment"># Charges are negative, deposits are positive (most bank accounts)</span>
+<span class="comment"># Use {-amount} to flip the sign so spending is positive</span>
+<span class="highlight">format:</span> <span class="string">"{date},{description},{-amount}"</span>
+
+<span class="comment"># All amounts are positive, separate debit/credit columns</span>
+<span class="comment"># Use {+amount} to ensure positive, skip the other column</span>
+<span class="highlight">format:</span> <span class="string">"{date},{description},{+amount},{_}"</span></code></pre>
+
+        <h3>Capturing Custom Fields</h3>
+        <p>Any token besides the reserved ones becomes a custom field you can use in rules:</p>
+        <pre><code><span class="comment"># CSV: Date, Type, Memo, Vendor, Amount</span>
+<span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{txn_type},{memo},{vendor},{amount}"</span>
+
+<span class="comment"># Now use in merchants.rules:</span>
+<span class="comment"># match: field.txn_type == "WIRE"</span>
+<span class="comment"># match: contains(field.memo, "Invoice")</span></code></pre>
+
+        <h3>Combining Columns into Description</h3>
+        <p>Some CSVs split transaction info across multiple columns. Use <code>columns.description</code> to combine them:</p>
+        <pre><code><span class="comment"># CSV: Date, Category, Payee, Reference, Amount</span>
+<span class="highlight">- name:</span> My Bank
+  <span class="highlight">file:</span> data/bank.csv
+  <span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{category},{payee},{ref},{amount}"</span>
+  <span class="highlight">columns:</span>
+    <span class="highlight">description:</span> <span class="string">"{payee} - {category}"</span>
+<span class="comment"># Result: "AMAZON - Shopping" instead of just one column</span></code></pre>
+
+        <p>The template can reference any captured field:</p>
+        <pre><code><span class="comment"># Include reference number for matching</span>
+<span class="highlight">columns:</span>
+  <span class="highlight">description:</span> <span class="string">"{payee} ({ref})"</span>
+<span class="comment"># Result: "AMAZON (INV-12345)"</span></code></pre>
+
+        <h3>Examples</h3>
+        <pre><code><span class="comment"># Simple: date, description, amount</span>
+<span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{description},{amount}"</span>
+
+<span class="comment"># Skip columns you don't need</span>
+<span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{_},{description},{_},{amount}"</span>
+
+<span class="comment"># Bank account with negated amounts</span>
+<span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{description},{-amount}"</span>
+
+<span class="comment"># European bank with custom description</span>
+<span class="highlight">- name:</span> German Bank
+  <span class="highlight">file:</span> data/german.csv
+  <span class="highlight">format:</span> <span class="string">"{date:%d.%m.%Y},{_},{txn_type},{vendor},{_},{amount}"</span>
+  <span class="highlight">decimal_separator:</span> <span class="string">","</span>
+  <span class="highlight">columns:</span>
+    <span class="highlight">description:</span> <span class="string">"{vendor} ({txn_type})"</span></code></pre>
+
+        <h2 id="date-formats">Date Formats</h2>
+        <p>Common date format specifiers:</p>
+
+        <table>
+            <tr>
+                <th>Format</th>
+                <th>Example</th>
+                <th>Notes</th>
+            </tr>
+            <tr>
+                <td><code>%m/%d/%Y</code></td>
+                <td>01/15/2025</td>
+                <td>US format</td>
+            </tr>
+            <tr>
+                <td><code>%d/%m/%Y</code></td>
+                <td>15/01/2025</td>
+                <td>European format</td>
+            </tr>
+            <tr>
+                <td><code>%Y-%m-%d</code></td>
+                <td>2025-01-15</td>
+                <td>ISO format</td>
+            </tr>
+            <tr>
+                <td><code>%d.%m.%Y</code></td>
+                <td>15.01.2025</td>
+                <td>German format</td>
+            </tr>
+            <tr>
+                <td><code>%m-%d-%Y</code></td>
+                <td>01-15-2025</td>
+                <td>US with dashes</td>
+            </tr>
+        </table>
+
+        <h2 id="currency">Currency Format</h2>
+        <p>Display amounts in your local currency:</p>
+
+        <pre><code><span class="comment"># US Dollars (default)</span>
+<span class="highlight">currency_format:</span> <span class="string">"${amount}"</span>      <span class="comment"># → $1,234.56</span>
+
+<span class="comment"># Euro</span>
+<span class="highlight">currency_format:</span> <span class="string">"€{amount}"</span>      <span class="comment"># → €1,234.56</span>
+
+<span class="comment"># British Pound</span>
+<span class="highlight">currency_format:</span> <span class="string">"£{amount}"</span>      <span class="comment"># → £1,234.56</span>
+
+<span class="comment"># Polish Zloty (suffix)</span>
+<span class="highlight">currency_format:</span> <span class="string">"{amount} zł"</span>   <span class="comment"># → 1,234.56 zł</span>
+
+<span class="comment"># Japanese Yen (no decimals)</span>
+<span class="highlight">currency_format:</span> <span class="string">"¥{amount}"</span>      <span class="comment"># → ¥1,234</span></code></pre>
+
+        <h3>European Number Format</h3>
+        <p>For CSVs using comma as decimal separator:</p>
+        <pre><code><span class="highlight">- name:</span> German Bank
+  <span class="highlight">file:</span> data/german.csv
+  <span class="highlight">format:</span> <span class="string">"{date:%d.%m.%Y},{description},{amount}"</span>
+  <span class="highlight">decimal_separator:</span> <span class="string">","</span>  <span class="comment"># Parses 1.234,56 correctly</span></code></pre>
+
+        <h2 id="travel">Travel Detection</h2>
+        <p>Tally can automatically detect travel-related transactions using location data from your CSVs.</p>
+
+        <h3>Capturing Location</h3>
+        <p>If your bank includes a state/country code in the CSV, capture it with <code>{location}</code>:</p>
+        <pre><code><span class="comment"># CSV: Date, Description, Amount, State</span>
+<span class="highlight">format:</span> <span class="string">"{date:%m/%d/%Y},{description},{amount},{location}"</span></code></pre>
+
+        <h3>Defining Home Locations</h3>
+        <p>Transactions outside these locations are classified as travel:</p>
+        <pre><code><span class="highlight">home_locations:</span>
+  - WA
+  - OR
+  - CA</code></pre>
+
+        <h3>Custom Travel Labels</h3>
+        <p>Map location codes to readable names in reports:</p>
+        <pre><code><span class="highlight">travel_labels:</span>
+  <span class="highlight">NY:</span> New York Trip
+  <span class="highlight">TX:</span> Austin Conference
+  <span class="highlight">GB:</span> London Vacation</code></pre>
+
+        <h2 id="commands">CLI Commands</h2>
+        <table>
+            <tr>
+                <th>Command</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>tally init [dir]</code></td>
+                <td>Create a new budget folder</td>
+            </tr>
+            <tr>
+                <td><code>tally workflow</code></td>
+                <td>Show next steps (context-aware)</td>
+            </tr>
+            <tr>
+                <td><code>tally run</code></td>
+                <td>Generate HTML spending report</td>
+            </tr>
+            <tr>
+                <td><code>tally inspect &lt;csv&gt;</code></td>
+                <td>Analyze CSV structure</td>
+            </tr>
+            <tr>
+                <td><code>tally discover</code></td>
+                <td>Find uncategorized transactions</td>
+            </tr>
+            <tr>
+                <td><code>tally explain &lt;merchant&gt;</code></td>
+                <td>Explain merchant classification</td>
+            </tr>
+            <tr>
+                <td><code>tally diag</code></td>
+                <td>Debug configuration issues</td>
+            </tr>
+            <tr>
+                <td><code>tally reference</code></td>
+                <td>Show full reference docs</td>
+            </tr>
+        </table>
+
+        <h3>Output Formats</h3>
+        <pre><code><span class="comment"># Different output formats</span>
+tally run                      <span class="comment"># HTML report (default)</span>
+tally run --format json        <span class="comment"># JSON with reasoning</span>
+tally run --format markdown    <span class="comment"># Markdown report</span>
+tally run --format summary     <span class="comment"># Text summary only</span>
+
+<span class="comment"># Verbosity levels</span>
+tally run -v                   <span class="comment"># Include decision trace</span>
+tally run -vv                  <span class="comment"># Include thresholds, CV values</span></code></pre>
+
+        <h3>Filtering</h3>
+        <pre><code><span class="comment"># Filter by classification</span>
+tally run --format json --only monthly,variable
+
+<span class="comment"># Filter by category</span>
+tally run --format json --category Food
+
+<span class="comment"># Explain specific classifications</span>
+tally explain --classification monthly
+tally explain --category Subscriptions
+tally explain --tags business</code></pre>
+    </div>
+</body>
+</html>
