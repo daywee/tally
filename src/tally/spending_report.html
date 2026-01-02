@@ -210,7 +210,7 @@
                     :total-amount="category.filteredTotal"
                     :category-total="category.filteredTotal"
                     :grand-total="grandTotal"
-                    :gross-spending="['income', 'transfer', 'transfers', 'investment', 'investments'].includes(categoryName.toLowerCase()) ? 0 : grossSpending"
+                    :gross-spending="grossSpending"
                     :num-months="numFilteredMonths"
                     :header-color="categoryColorMap[categoryName]"
                     :category-mode="true"

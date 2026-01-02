@@ -10,6 +10,8 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
+from .classification import is_excluded_from_spending
+
 # Try to import sentence_transformers for semantic search
 try:
     from sentence_transformers import SentenceTransformer
@@ -339,11 +341,16 @@ def write_summary_file_vue(stats, filepath, year=2025, currency_format="${amount
 
     # Build category view - group all merchants by category -> subcategory
     # This uses by_merchant (all merchants) so it's not filtered by views.rules
+    # Excludes income/transfer/investment tagged merchants (they appear in summary cards)
     def build_category_view():
         # Build from by_merchant which contains ALL merchants (not filtered by sections)
         all_merchants = {}
         by_merchant = stats.get('by_merchant', {})
         for merchant_name, data in by_merchant.items():
+            # Skip merchants excluded from spending (income, transfer, investment)
+            # They appear in the cash flow and investment cards, not spending categories
+            if is_excluded_from_spending(list(data.get('tags', []))):
+                continue
             merchant_id = make_merchant_id(merchant_name)
             all_merchants[merchant_id] = build_section_merchants({merchant_name: data})[merchant_id]
 
