@@ -985,10 +985,11 @@ createApp({
         });
 
         // Chart data aggregations - always uses categoryView for consistent data
-        // Includes spending and income, excludes transfers (money moving between accounts)
+        // Includes spending, income, and investment; excludes transfers (money moving between accounts)
         const chartAggregations = computed(() => {
             const spendingByMonth = {};
             const incomeByMonth = {};
+            const investmentByMonth = {};
             const byCategory = {};  // Spending only (income doesn't have meaningful categories)
             const byCategoryByMonth = {};
 
@@ -1017,13 +1018,18 @@ createApp({
                                 incomeByMonth[txn.month] = (incomeByMonth[txn.month] || 0) + c.income;
                             }
 
+                            // Track investment by month
+                            if (c.investment > 0) {
+                                investmentByMonth[txn.month] = (investmentByMonth[txn.month] || 0) + c.investment;
+                            }
+
                             // Transfers excluded - they're just money moving between accounts
                         }
                     }
                 }
             }
 
-            return { spendingByMonth, incomeByMonth, byCategory, byCategoryByMonth };
+            return { spendingByMonth, incomeByMonth, investmentByMonth, byCategory, byCategoryByMonth };
         });
 
         // Map category names to colors (matches pie chart order)
@@ -1619,6 +1625,12 @@ createApp({
                                 data: [],
                                 backgroundColor: '#00c9a7',
                                 borderRadius: 4
+                            },
+                            {
+                                label: 'Investment',
+                                data: [],
+                                backgroundColor: '#7c3aed',
+                                borderRadius: 4
                             }
                         ]
                     },
@@ -1750,15 +1762,17 @@ createApp({
             const agg = chartAggregations.value;
             const monthsToShow = filteredMonthsForCharts.value;
 
-            // Update monthly trend (spending and income)
+            // Update monthly trend (spending, income, and investment)
             if (monthlyChartInstance) {
                 const labels = monthsToShow.map(m => m.label);
                 const spendingData = monthsToShow.map(m => agg.spendingByMonth[m.key] || 0);
                 const incomeData = monthsToShow.map(m => agg.incomeByMonth[m.key] || 0);
-                const maxVal = Math.max(...spendingData, ...incomeData, 1);
+                const investmentData = monthsToShow.map(m => agg.investmentByMonth[m.key] || 0);
+                const maxVal = Math.max(...spendingData, ...incomeData, ...investmentData, 1);
                 monthlyChartInstance.data.labels = labels;
                 monthlyChartInstance.data.datasets[0].data = spendingData;
                 monthlyChartInstance.data.datasets[1].data = incomeData;
+                monthlyChartInstance.data.datasets[2].data = investmentData;
                 monthlyChartInstance.options.scales.y.suggestedMax = maxVal * 1.1;
                 monthlyChartInstance.update();
             }
