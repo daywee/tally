@@ -33,8 +33,9 @@
                              class="autocomplete-item"
                              :class="{ selected: index === autocompleteIndex }"
                              @click="selectAutocompleteItem(item)">
-                            {{ item.displayText }}
-                            <span class="type" :class="item.type">{{ item.type }}</span>
+                            <span v-if="item.type === 'tag'" :style="{ color: tagColor(item.filterText) }">{{ item.displayText }}</span>
+                            <span v-else>{{ item.displayText }}</span>
+                            <span class="type" :class="item.type" :style="item.type === 'tag' ? { borderColor: tagColor(item.filterText), color: tagColor(item.filterText) } : {}">{{ item.type }}</span>
                         </div>
                     </div>
                 </div>
@@ -49,6 +50,7 @@
                          :key="index"
                          class="filter-chip"
                          :class="[filter.type, filter.mode]"
+                         :style="filter.type === 'tag' ? { borderColor: tagColor(filter.text), color: tagColor(filter.text) } : {}"
                          data-testid="filter-chip"
                          @click="toggleFilterMode(index)">
                         <span class="chip-type">{{ filterTypeChar(filter.type) }}</span>

@@ -305,7 +305,7 @@ const MerchantSection = defineComponent({
                                                       @click.stop="addFilter(txn.location, 'location')">
                                                     {{ txn.location }}
                                                 </span>
-                                                <span v-for="tag in (txn.tags || [])"
+                                                <span v-for="tag in [...(txn.tags || [])].sort()"
                                                       :key="tag"
                                                       class="tag-badge"
                                                       data-testid="tag-badge"
@@ -376,10 +376,13 @@ const MerchantSection = defineComponent({
             if (popup) popup.classList.remove('visible');
         },
         getTags(item) {
+            let tags;
             if (item.filteredTxns) {
-                return [...new Set(item.filteredTxns.flatMap(t => t.tags || []))];
+                tags = [...new Set(item.filteredTxns.flatMap(t => t.tags || []))];
+            } else {
+                tags = item.tags || [];
             }
-            return item.tags || [];
+            return [...tags].sort((a, b) => a.localeCompare(b));
         },
         getTransactions(item) {
             const txns = item.filteredTxns || item.transactions || [];
