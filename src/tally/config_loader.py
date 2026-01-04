@@ -261,6 +261,18 @@ def load_config(config_dir, settings_file='settings.yaml'):
     # Currency format for display (default: USD)
     config['currency_format'] = config.get('currency_format', '${amount}')
 
+    # Rule matching mode: 'first_match' (default, backwards compatible) or 'most_specific'
+    rule_mode = config.get('rule_mode', 'first_match')
+    if rule_mode not in ('first_match', 'most_specific'):
+        warnings.append({
+            'type': 'warning',
+            'source': 'settings.yaml',
+            'message': f"Invalid rule_mode: '{rule_mode}'. Using 'first_match'.",
+            'suggestion': "Use 'first_match' or 'most_specific'.",
+        })
+        rule_mode = 'first_match'
+    config['rule_mode'] = rule_mode
+
 
     # Load merchants file (optional - merchants_file in settings.yaml)
     # This is the new .rules format; merchant_categories.csv is deprecated

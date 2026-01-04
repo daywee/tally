@@ -135,16 +135,25 @@ class MerchantEngine:
     """
     Engine for parsing .rules files and matching transactions.
 
-    Uses two-pass evaluation:
-    1. Categorization pass: First matching rule with category wins
-    2. Tagging pass: ALL matching rules contribute their tags
+    Supports two matching modes (controlled by match_mode):
+    - 'first_match' (default): First matching rule sets category (backwards compatible)
+    - 'most_specific': Most specific matching rule wins (opt-in)
+
+    In both modes, tags are collected from ALL matching rules.
     """
 
-    def __init__(self):
+    def __init__(self, match_mode: str = 'first_match'):
+        """
+        Initialize the merchant engine.
+
+        Args:
+            match_mode: 'first_match' (default) or 'most_specific'
+        """
         self.rules: List[MerchantRule] = []
         self.variables: Dict[str, Any] = {}
         self.transforms: List[Tuple[str, str]] = []  # [(field_path, expression), ...]
         self._compiled_exprs: Dict[str, Any] = {}  # Cache of parsed ASTs
+        self.match_mode = match_mode
 
     def load_file(self, filepath: Path) -> None:
         """Load rules from a .rules file."""
@@ -473,12 +482,13 @@ class MerchantEngine:
 
     def match(self, transaction: Dict, data_sources: Optional[Dict] = None) -> MatchResult:
         """
-        Match a transaction against all rules.
+        Match a transaction against rules.
 
-        All-rules-match evaluation:
-        1. Evaluate ALL rules and collect matches
-        2. Resolve merchant/category/subcategory independently by specificity
-        3. Collect tags from ALL matching rules
+        Behavior depends on match_mode:
+        - 'first_match': First matching rule with category wins (backwards compatible)
+        - 'most_specific': Most specific matching rule wins
+
+        In both modes, tags are collected from ALL matching rules.
 
         Args:
             transaction: Transaction dict with description, amount, date, etc.
@@ -488,13 +498,16 @@ class MerchantEngine:
         all_tags: Set[str] = set()
         tag_sources: Dict[str, Dict] = {}
 
-        # Collect all matching rules with their specificity and evaluated variables
-        matching_rules: List[Tuple[MerchantRule, Tuple[int, int, int, int], Dict]] = []
-
         # Evaluate global variables for this transaction
         global_variables = self._evaluate_variables(transaction, data_sources)
 
-        # Evaluate ALL rules
+        # Track the first categorization rule (for first_match mode)
+        first_category_rule: Optional[Tuple[MerchantRule, Dict]] = None
+
+        # Collect all matching rules (needed for most_specific mode and tag collection)
+        matching_rules: List[Tuple[MerchantRule, Tuple[int, int, int, int], Dict]] = []
+
+        # Evaluate ALL rules (we always need to do this for tag collection)
         for rule in self.rules:
             try:
                 # Evaluate rule-level let bindings (can reference global variables)
@@ -516,6 +529,10 @@ class MerchantEngine:
                 specificity = calculate_specificity(rule)
                 matching_rules.append((rule, specificity, variables))
 
+                # Track first categorization rule for first_match mode
+                if first_category_rule is None and rule.is_categorization_rule:
+                    first_category_rule = (rule, variables)
+
                 # Collect tags from ALL matching rules (resolve dynamic expressions)
                 resolved_tags = self._resolve_tags(rule, transaction, variables, data_sources)
                 for tag in resolved_tags:
@@ -527,35 +544,55 @@ class MerchantEngine:
         # Store all matching rules
         result.all_matching_rules = [r for r, _, _ in matching_rules]
 
-        # Resolve each field independently by specificity (highest wins)
-        if matching_rules:
-            # Merchant: most specific rule that sets merchant
-            merchant_rules = [(r, s, v) for r, s, v in matching_rules if r.has_merchant]
-            if merchant_rules:
-                winner = max(merchant_rules, key=lambda x: x[1])
-                result.merchant = winner[0].merchant
-                result.merchant_rule = winner[0]
-
-            # Category: most specific rule that sets category
-            category_rules = [(r, s, v) for r, s, v in matching_rules if r.is_categorization_rule]
-            if category_rules:
-                winner = max(category_rules, key=lambda x: x[1])
+        # Resolve category based on match_mode
+        if self.match_mode == 'first_match':
+            # First match wins (backwards compatible)
+            if first_category_rule:
+                rule, variables = first_category_rule
                 result.matched = True
-                result.category = winner[0].category
-                result.matched_rule = winner[0]
+                result.merchant = rule.merchant
+                result.merchant_rule = rule
+                result.category = rule.category
+                result.matched_rule = rule
+                if rule.subcategory:
+                    result.subcategory = rule.subcategory
+                    result.subcategory_rule = rule
 
-                # Evaluate extra fields for the category winner
-                if winner[0].fields:
+                # Evaluate extra fields for the winning rule
+                if rule.fields:
                     result.extra_fields = self._evaluate_fields(
-                        winner[0], transaction, winner[2], data_sources
+                        rule, transaction, variables, data_sources
                     )
+        else:
+            # most_specific mode: resolve each field independently by specificity
+            if matching_rules:
+                # Merchant: most specific rule that sets merchant
+                merchant_rules = [(r, s, v) for r, s, v in matching_rules if r.has_merchant]
+                if merchant_rules:
+                    winner = max(merchant_rules, key=lambda x: x[1])
+                    result.merchant = winner[0].merchant
+                    result.merchant_rule = winner[0]
 
-            # Subcategory: most specific rule that sets subcategory
-            subcategory_rules = [(r, s, v) for r, s, v in matching_rules if r.has_subcategory]
-            if subcategory_rules:
-                winner = max(subcategory_rules, key=lambda x: x[1])
-                result.subcategory = winner[0].subcategory
-                result.subcategory_rule = winner[0]
+                # Category: most specific rule that sets category
+                category_rules = [(r, s, v) for r, s, v in matching_rules if r.is_categorization_rule]
+                if category_rules:
+                    winner = max(category_rules, key=lambda x: x[1])
+                    result.matched = True
+                    result.category = winner[0].category
+                    result.matched_rule = winner[0]
+
+                    # Evaluate extra fields for the category winner
+                    if winner[0].fields:
+                        result.extra_fields = self._evaluate_fields(
+                            winner[0], transaction, winner[2], data_sources
+                        )
+
+                # Subcategory: most specific rule that sets subcategory
+                subcategory_rules = [(r, s, v) for r, s, v in matching_rules if r.has_subcategory]
+                if subcategory_rules:
+                    winner = max(subcategory_rules, key=lambda x: x[1])
+                    result.subcategory = winner[0].subcategory
+                    result.subcategory_rule = winner[0]
 
         result.tags = all_tags
         result.tag_sources = tag_sources
@@ -576,16 +613,26 @@ class MerchantEngine:
         return [r for r in self.rules if not r.is_categorization_rule]
 
 
-def load_merchants_file(filepath: Path) -> MerchantEngine:
-    """Load a .rules file and return configured engine."""
-    engine = MerchantEngine()
+def load_merchants_file(filepath: Path, match_mode: str = 'first_match') -> MerchantEngine:
+    """Load a .rules file and return configured engine.
+
+    Args:
+        filepath: Path to the .rules file
+        match_mode: 'first_match' (default) or 'most_specific'
+    """
+    engine = MerchantEngine(match_mode=match_mode)
     engine.load_file(filepath)
     return engine
 
 
-def parse_merchants(content: str) -> MerchantEngine:
-    """Parse .rules content and return configured engine."""
-    engine = MerchantEngine()
+def parse_merchants(content: str, match_mode: str = 'first_match') -> MerchantEngine:
+    """Parse .rules content and return configured engine.
+
+    Args:
+        content: Rules file content
+        match_mode: 'first_match' (default) or 'most_specific'
+    """
+    engine = MerchantEngine(match_mode=match_mode)
     engine.parse(content)
     return engine
 
@@ -785,7 +832,7 @@ def csv_to_merchants_content(csv_rules: List[Tuple]) -> str:
     return "\n".join(lines)
 
 
-def load_csv_as_engine(csv_path: Path) -> MerchantEngine:
+def load_csv_as_engine(csv_path: Path, match_mode: str = 'first_match') -> MerchantEngine:
     """
     Load a merchant_categories.csv file as a MerchantEngine.
 
@@ -794,6 +841,7 @@ def load_csv_as_engine(csv_path: Path) -> MerchantEngine:
 
     Args:
         csv_path: Path to merchant_categories.csv
+        match_mode: 'first_match' (default) or 'most_specific'
 
     Returns:
         Configured MerchantEngine
@@ -803,6 +851,6 @@ def load_csv_as_engine(csv_path: Path) -> MerchantEngine:
     csv_rules = load_merchant_rules(str(csv_path))
     merchant_rules = csv_to_rules(csv_rules)
 
-    engine = MerchantEngine()
+    engine = MerchantEngine(match_mode=match_mode)
     engine.rules = merchant_rules
     return engine

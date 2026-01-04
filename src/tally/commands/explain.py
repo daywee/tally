@@ -47,7 +47,8 @@ def cmd_explain(args):
     _check_deprecated_description_cleaning(config)
 
     data_sources = config.get('data_sources', [])
-    transforms = get_transforms(config.get('_merchants_file'))
+    rule_mode = config.get('rule_mode', 'first_match')
+    transforms = get_transforms(config.get('_merchants_file'), match_mode=rule_mode)
 
     if not data_sources:
         print("Error: No data sources configured", file=sys.stderr)
@@ -56,9 +57,9 @@ def cmd_explain(args):
     # Load merchant rules
     merchants_file = config.get('_merchants_file')
     if merchants_file and os.path.exists(merchants_file):
-        rules = get_all_rules(merchants_file)
+        rules = get_all_rules(merchants_file, match_mode=rule_mode)
     else:
-        rules = get_all_rules()
+        rules = get_all_rules(match_mode=rule_mode)
 
     # Parse transactions (quietly)
     all_txns = []

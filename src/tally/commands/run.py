@@ -55,7 +55,8 @@ def cmd_run(args):
 
     year = config.get('year', 2025)
     data_sources = config.get('data_sources', [])
-    transforms = get_transforms(config.get('_merchants_file'))
+    rule_mode = config.get('rule_mode', 'first_match')
+    transforms = get_transforms(config.get('_merchants_file'), match_mode=rule_mode)
 
     # Check for data sources early before printing anything
     if not data_sources:

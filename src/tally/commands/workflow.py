@@ -42,10 +42,13 @@ def cmd_workflow(args):
     path_settings = make_path(os.path.join('config', 'settings.yaml')) if config_dir else './config/settings.yaml'
     path_merchants = make_path(os.path.join('config', 'merchants.rules')) if config_dir else './config/merchants.rules'
 
+    rule_mode = 'first_match'  # Default
+
     if has_config:
         try:
             config = load_config(config_dir)
             has_data_sources = bool(config.get('data_sources'))
+            rule_mode = config.get('rule_mode', 'first_match')
 
             if has_data_sources:
                 # Try to get unknown merchant count
@@ -172,9 +175,12 @@ def cmd_workflow(args):
     print(f"    {C.DIM}  [401K] match: contains(\"VANGUARD\") tags: investment{C.RESET}")
 
     section("Best Practices")
-    print(f"    {C.YELLOW}{C.BOLD}MOST SPECIFIC RULE WINS{C.RESET}")
-    print(f"    {C.DIM}All matching rules are evaluated. Most specific sets category.{C.RESET}")
-    print(f"    {C.DIM}Tags are collected from ALL matching rules.{C.RESET}")
+    if rule_mode == 'most_specific':
+        print(f"    {C.YELLOW}{C.BOLD}MOST SPECIFIC RULE WINS{C.RESET}  {C.DIM}(rule_mode: most_specific){C.RESET}")
+        print(f"    {C.DIM}More conditions = more specific = wins. Tags are collected from ALL matching rules.{C.RESET}")
+    else:
+        print(f"    {C.YELLOW}{C.BOLD}FIRST MATCHING RULE WINS{C.RESET}  {C.DIM}(rule_mode: first_match){C.RESET}")
+        print(f"    {C.DIM}Put specific rules before general ones. Tags are collected from ALL matching rules.{C.RESET}")
     print()
     print(f"    {C.BOLD}1. Start broad, refine later{C.RESET}")
     print(f"       {C.DIM}Write general rules first, then add specific overrides only when needed.{C.RESET}")
@@ -185,10 +191,16 @@ def cmd_workflow(args):
     print(f"       {C.DIM}  match: anyof(\"DELTA\", \"UNITED\", \"AMERICAN\", \"SOUTHWEST\"){C.RESET}")
     print(f"       {C.DIM}  category: Travel{C.RESET}")
     print()
-    print(f"    {C.BOLD}3. Specificity determines category{C.RESET}")
-    print(f"       {C.DIM}More conditions = more specific = wins. Order doesn't matter:{C.RESET}")
-    print(f"       {C.DIM}  [Uber] match: contains(\"UBER\"){C.RESET}")
-    print(f"       {C.DIM}  [Uber Eats] match: contains(\"UBER\") and contains(\"EATS\")  # wins{C.RESET}")
+    if rule_mode == 'most_specific':
+        print(f"    {C.BOLD}3. Specificity determines category{C.RESET}")
+        print(f"       {C.DIM}More conditions = more specific = wins. Order doesn't matter:{C.RESET}")
+        print(f"       {C.DIM}  [Uber] match: contains(\"UBER\"){C.RESET}")
+        print(f"       {C.DIM}  [Uber Eats] match: contains(\"UBER\") and contains(\"EATS\")  # wins{C.RESET}")
+    else:
+        print(f"    {C.BOLD}3. Specific rules go first{C.RESET}")
+        print(f"       {C.DIM}First matching rule sets category. Put \"Uber Eats\" before \"Uber\":{C.RESET}")
+        print(f"       {C.DIM}  [Uber Eats] match: contains(\"UBER\") and contains(\"EATS\"){C.RESET}")
+        print(f"       {C.DIM}  [Uber] match: contains(\"UBER\")  # catches remaining{C.RESET}")
     print()
     print(f"    {C.BOLD}4. Use normalized() for inconsistent names{C.RESET}")
     print(f"       {C.DIM}normalized(\"WHOLEFOODS\") matches \"WHOLE FOODS\", \"WHOLEFDS\", etc.{C.RESET}")

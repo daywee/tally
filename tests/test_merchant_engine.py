@@ -237,7 +237,7 @@ subcategory: Streaming
         assert result.category == ""
 
     def test_most_specific_wins(self):
-        """Most specific matching rule wins (not first-match)."""
+        """Most specific matching rule wins when match_mode='most_specific'."""
         content = '''
 [Streaming Service]
 match: contains("NETFLIX")
@@ -249,7 +249,8 @@ match: contains("NETFLIX") and contains(".COM")
 category: Subscriptions
 subcategory: Monthly
 '''
-        engine = parse_merchants(content)
+        # Use most_specific mode (opt-in)
+        engine = parse_merchants(content, match_mode='most_specific')
         txn = {'description': 'NETFLIX.COM', 'amount': 15.99}
         result = engine.match(txn)
 
@@ -257,6 +258,29 @@ subcategory: Monthly
         assert result.category == "Subscriptions"
         assert result.subcategory == "Monthly"
         assert result.merchant == "Netflix Specific"
+
+    def test_first_match_wins_default(self):
+        """First matching rule wins by default (backwards compatible)."""
+        content = '''
+[Streaming Service]
+match: contains("NETFLIX")
+category: Entertainment
+subcategory: Streaming
+
+[Netflix Specific]
+match: contains("NETFLIX") and contains(".COM")
+category: Subscriptions
+subcategory: Monthly
+'''
+        # Default mode is first_match
+        engine = parse_merchants(content)
+        txn = {'description': 'NETFLIX.COM', 'amount': 15.99}
+        result = engine.match(txn)
+
+        # First matching rule wins (backwards compatible)
+        assert result.category == "Entertainment"
+        assert result.subcategory == "Streaming"
+        assert result.merchant == "Streaming Service"
 
     def test_amount_condition(self):
         """Amount condition in match expression."""
@@ -323,7 +347,7 @@ subcategory: Delivery
 
 
 class TestSpecificityResolution:
-    """Tests for specificity-based matching."""
+    """Tests for specificity-based matching (requires match_mode='most_specific')."""
 
     def test_longer_pattern_more_specific(self):
         """Longer pattern is more specific than shorter."""
@@ -338,7 +362,7 @@ match: contains("AMAZON PRIME")
 category: Subscriptions
 subcategory: Prime
 '''
-        engine = parse_merchants(content)
+        engine = parse_merchants(content, match_mode='most_specific')
 
         # Short pattern matches less specific rule
         regular = {'description': 'AMAZON ORDER', 'amount': 50.0}
@@ -361,7 +385,7 @@ match: contains("COSTCO") and amount > 200
 category: Shopping
 subcategory: Bulk
 '''
-        engine = parse_merchants(content)
+        engine = parse_merchants(content, match_mode='most_specific')
 
         # Small purchase - only general rule matches
         small = {'description': 'COSTCO #123', 'amount': 50.0}
@@ -389,7 +413,7 @@ subcategory: Big Ticket
 match: month >= 11 and month <= 12
 tags: holiday
 '''
-        engine = parse_merchants(content)
+        engine = parse_merchants(content, match_mode='most_specific')
         from datetime import date
 
         # Transaction matches Large Purchase for category/subcategory
@@ -1467,5 +1491,147 @@ field: x = import os
         engine = MerchantEngine()
         with pytest.raises(MerchantParseError, match="Invalid field expression"):
             engine.parse(content)
+
+
+class TestRuleModes:
+    """Tests for rule_mode: first_match vs most_specific."""
+
+    OVERLAPPING_RULES = '''
+[General]
+match: contains("STORE")
+category: Shopping
+subcategory: General
+
+[Specific]
+match: contains("STORE") and amount > 100
+category: Shopping
+subcategory: Large Purchase
+'''
+
+    def test_first_match_mode_default(self):
+        """Default mode is first_match."""
+        engine = parse_merchants(self.OVERLAPPING_RULES)
+        assert engine.match_mode == 'first_match'
+
+    def test_first_match_mode_explicit(self):
+        """Explicit first_match mode works."""
+        engine = parse_merchants(self.OVERLAPPING_RULES, match_mode='first_match')
+        assert engine.match_mode == 'first_match'
+
+    def test_most_specific_mode_explicit(self):
+        """Explicit most_specific mode works."""
+        engine = parse_merchants(self.OVERLAPPING_RULES, match_mode='most_specific')
+        assert engine.match_mode == 'most_specific'
+
+    def test_first_match_first_rule_wins(self):
+        """In first_match mode, first matching rule wins regardless of specificity."""
+        engine = parse_merchants(self.OVERLAPPING_RULES, match_mode='first_match')
+
+        # Even with amount > 100, first rule (General) wins
+        txn = {'description': 'MY STORE', 'amount': 200.0}
+        result = engine.match(txn)
+
+        assert result.subcategory == "General"
+        assert result.matched_rule.name == "General"
+
+    def test_most_specific_more_conditions_wins(self):
+        """In most_specific mode, rule with more conditions wins."""
+        engine = parse_merchants(self.OVERLAPPING_RULES, match_mode='most_specific')
+
+        # With amount > 100, more specific rule (Specific) wins
+        txn = {'description': 'MY STORE', 'amount': 200.0}
+        result = engine.match(txn)
+
+        assert result.subcategory == "Large Purchase"
+        assert result.matched_rule.name == "Specific"
+
+    def test_both_modes_collect_all_tags(self):
+        """Both modes collect tags from ALL matching rules."""
+        content = '''
+[General]
+match: contains("STORE")
+category: Shopping
+tags: retail
+
+[Large]
+match: amount > 100
+tags: large
+
+[Expensive]
+match: amount > 500
+tags: expensive
+'''
+        txn = {'description': 'MY STORE', 'amount': 600.0}
+
+        # Test first_match mode
+        engine1 = parse_merchants(content, match_mode='first_match')
+        result1 = engine1.match(txn)
+        assert result1.tags == {"retail", "large", "expensive"}
+
+        # Test most_specific mode
+        engine2 = parse_merchants(content, match_mode='most_specific')
+        result2 = engine2.match(txn)
+        assert result2.tags == {"retail", "large", "expensive"}
+
+    def test_first_match_order_matters(self):
+        """In first_match mode, rule order determines winner."""
+        # Rules in different order
+        content_specific_first = '''
+[Uber Eats]
+match: contains("UBER") and contains("EATS")
+category: Food
+
+[Uber]
+match: contains("UBER")
+category: Transport
+'''
+        content_general_first = '''
+[Uber]
+match: contains("UBER")
+category: Transport
+
+[Uber Eats]
+match: contains("UBER") and contains("EATS")
+category: Food
+'''
+        txn = {'description': 'UBER EATS ORDER', 'amount': 25.0}
+
+        # Specific rule first -> Food wins
+        engine1 = parse_merchants(content_specific_first, match_mode='first_match')
+        assert engine1.match(txn).category == "Food"
+
+        # General rule first -> Transport wins
+        engine2 = parse_merchants(content_general_first, match_mode='first_match')
+        assert engine2.match(txn).category == "Transport"
+
+    def test_most_specific_order_doesnt_matter(self):
+        """In most_specific mode, order doesn't affect category."""
+        content_specific_first = '''
+[Uber Eats]
+match: contains("UBER") and contains("EATS")
+category: Food
+
+[Uber]
+match: contains("UBER")
+category: Transport
+'''
+        content_general_first = '''
+[Uber]
+match: contains("UBER")
+category: Transport
+
+[Uber Eats]
+match: contains("UBER") and contains("EATS")
+category: Food
+'''
+        txn = {'description': 'UBER EATS ORDER', 'amount': 25.0}
+
+        # Specific rule first -> Food wins (more conditions)
+        engine1 = parse_merchants(content_specific_first, match_mode='most_specific')
+        assert engine1.match(txn).category == "Food"
+
+        # General rule first -> Food still wins (more conditions)
+        engine2 = parse_merchants(content_general_first, match_mode='most_specific')
+        assert engine2.match(txn).category == "Food"
 
 

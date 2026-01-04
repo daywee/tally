@@ -131,11 +131,12 @@ def _expr_to_regex(match_expr: str) -> str:
     return match_expr
 
 
-def get_all_rules(rules_path=None):
+def get_all_rules(rules_path=None, match_mode='first_match'):
     """Get user-defined merchant rules.
 
     Args:
         rules_path: Optional path to user's merchants file (.rules or .csv)
+        match_mode: 'first_match' (default) or 'most_specific'
 
     Returns:
         List of (pattern, merchant, category, subcategory, parsed_pattern, source, tags) tuples.
@@ -154,7 +155,7 @@ def get_all_rules(rules_path=None):
             try:
                 from .merchant_engine import load_merchants_file
                 from pathlib import Path
-                engine = load_merchants_file(Path(rules_path))
+                engine = load_merchants_file(Path(rules_path), match_mode=match_mode)
 
                 # Cache the engine for use by normalize_merchant()
                 _cached_engine = engine
@@ -201,10 +202,14 @@ def get_all_rules(rules_path=None):
     return user_rules_with_source
 
 
-def get_tag_only_rules(rules_path):
+def get_tag_only_rules(rules_path, match_mode='first_match'):
     """Get tag-only rules from a .rules file.
 
     Tag-only rules add tags to transactions without changing their category.
+
+    Args:
+        rules_path: Path to the .rules file
+        match_mode: 'first_match' (default) or 'most_specific'
 
     Returns:
         List of MerchantRule objects that are tag-only (no category).
@@ -215,7 +220,7 @@ def get_tag_only_rules(rules_path):
     try:
         from .merchant_engine import load_merchants_file
         from pathlib import Path
-        engine = load_merchants_file(Path(rules_path))
+        engine = load_merchants_file(Path(rules_path), match_mode=match_mode)
         return engine.tag_only_rules
     except Exception:
         return []
@@ -264,11 +269,15 @@ def apply_tag_rules(transaction, tag_rules):
     return additional_tags
 
 
-def get_transforms(rules_path):
+def get_transforms(rules_path, match_mode='first_match'):
     """Get field transforms from a .rules file.
 
     Transforms are assignments like:
         field.description = regex_replace(field.description, "^APLPAY\\s+", "")
+
+    Args:
+        rules_path: Path to the .rules file
+        match_mode: 'first_match' (default) or 'most_specific'
 
     Returns:
         List of (field_path, expression) tuples.
@@ -279,7 +288,7 @@ def get_transforms(rules_path):
     try:
         from .merchant_engine import load_merchants_file
         from pathlib import Path
-        engine = load_merchants_file(Path(rules_path))
+        engine = load_merchants_file(Path(rules_path), match_mode=match_mode)
         return engine.transforms
     except Exception:
         return []

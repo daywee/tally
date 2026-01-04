@@ -165,12 +165,13 @@ def _check_merchant_migration(config: dict, config_dir: str, quiet: bool = False
     """
     merchants_file = config.get('_merchants_file')
     merchants_format = config.get('_merchants_format')
+    rule_mode = config.get('rule_mode', 'first_match')
 
     if not merchants_file:
         # No rules file found
         if not quiet:
             print(f"No merchant rules found - transactions will be categorized as Unknown")
-        return get_all_rules()
+        return get_all_rules(match_mode=rule_mode)
 
     if merchants_format == 'csv':
         # CSV format - show deprecation warning and offer migration
@@ -217,7 +218,7 @@ def _check_merchant_migration(config: dict, config_dir: str, quiet: bool = False
                 print()
                 # Return new rules from migrated file
                 new_file = os.path.join(config_dir, 'merchants.rules')
-                return get_all_rules(new_file)
+                return get_all_rules(new_file, match_mode=rule_mode)
 
         # Continue with CSV format for this run (backwards compatible)
         if not quiet:
@@ -229,11 +230,11 @@ def _check_merchant_migration(config: dict, config_dir: str, quiet: bool = False
                 print("    Tip: Use an AI agent with 'tally discover' to auto-generate rules!")
                 print()
 
-        return get_all_rules(merchants_file)
+        return get_all_rules(merchants_file, match_mode=rule_mode)
 
     # New .rules format
     if merchants_format == 'new':
-        rules = get_all_rules(merchants_file)
+        rules = get_all_rules(merchants_file, match_mode=rule_mode)
         if not quiet:
             print(f"Loaded {len(rules)} categorization rules from {merchants_file}")
             if len(rules) == 0:
@@ -247,7 +248,7 @@ def _check_merchant_migration(config: dict, config_dir: str, quiet: bool = False
     # No rules file found
     if not quiet:
         print(f"No merchant rules found - transactions will be categorized as Unknown")
-    return get_all_rules()
+    return get_all_rules(match_mode=rule_mode)
 
 
 CONFIG_HELP = '''
@@ -359,6 +360,11 @@ html_filename: spending_summary.html
 # Merchant rules file - expression-based categorization
 merchants_file: config/merchants.rules
 
+# Rule matching mode:
+#   first_match (default) - First matching rule sets category. Order matters!
+#   most_specific         - Most specific rule wins. More conditions = wins.
+# rule_mode: first_match
+
 # Views file (optional) - custom spending views
 # Create config/views.rules and uncomment:
 # views_file: config/views.rules
@@ -378,8 +384,11 @@ merchants_file: config/merchants.rules
 STARTER_MERCHANTS = '''# Tally Merchant Rules
 #
 # Expression-based rules for categorizing transactions.
-# All matching rules are evaluated. Most specific sets category.
 # Tags are collected from ALL matching rules.
+#
+# RULE MATCHING (controlled by rule_mode in settings.yaml):
+#   first_match (default) - First matching rule sets category. Order matters!
+#   most_specific         - Most specific rule wins. More conditions = wins.
 #
 # Match expressions:
 #   contains("X")     - Case-insensitive substring match

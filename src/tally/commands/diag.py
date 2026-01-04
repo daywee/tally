@@ -56,8 +56,10 @@ def cmd_diag(args):
             from ..analyzer import format_currency
             print(f"  Currency format: {currency_fmt}")
             print(f"    Example: {format_currency(1234, currency_fmt)}")
+            rule_mode = config.get('rule_mode', 'first_match')
+            print(f"  Rule mode: {rule_mode}")
             # Show field transforms from merchants.rules
-            transforms = get_transforms(config.get('_merchants_file'))
+            transforms = get_transforms(config.get('_merchants_file'), match_mode=rule_mode)
             if transforms:
                 print(f"  Field transforms: {len(transforms)} transform(s)")
                 for field_path, expr in transforms[:5]:
