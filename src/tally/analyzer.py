@@ -590,12 +590,12 @@ def export_markdown(stats, verbose=0, category_filter=None, merchant_filter=None
     return '\n'.join(lines)
 
 
-def print_summary(stats, year=2025, filter_category=None, currency_format="${amount}", group_by='merchant'):
+def print_summary(stats, title=None, filter_category=None, currency_format="${amount}", group_by='merchant'):
     """Print analysis summary.
 
     Args:
         stats: Analysis statistics dict
-        year: Year for display
+        title: Report title for display (e.g., "2025 Budget Analysis")
         filter_category: Optional category to filter to
         currency_format: Format string for currency
         group_by: How to group in BY CATEGORY section - 'merchant' or 'subcategory'
@@ -625,7 +625,7 @@ def print_summary(stats, year=2025, filter_category=None, currency_format="${amo
     # FINANCIAL SUMMARY
     # =========================================================================
     print("=" * 80)
-    print(f"{year} FINANCIAL REPORT")
+    print(title or "FINANCIAL REPORT")
     print("=" * 80)
 
     print("\nCASH FLOW")
@@ -764,12 +764,12 @@ def print_summary(stats, year=2025, filter_category=None, currency_format="${amo
                     break
 
 
-def print_sections_summary(stats, year=2025, currency_format="${amount}", only_filter=None):
+def print_sections_summary(stats, title=None, currency_format="${amount}", only_filter=None):
     """Print sections-based analysis summary.
 
     Args:
         stats: Analysis statistics dict
-        year: Year for display
+        title: Report title for display (e.g., "2025 Budget Analysis")
         currency_format: Format string for currency
         only_filter: Optional list of section names (lowercase) to show
     """
@@ -796,7 +796,7 @@ def print_sections_summary(stats, year=2025, currency_format="${amount}", only_f
     num_months = stats.get('num_months', 12)
 
     print("=" * 80)
-    print(f"{year} SPENDING ANALYSIS")
+    print(title or "SPENDING ANALYSIS")
     print("=" * 80)
 
     # Print each section

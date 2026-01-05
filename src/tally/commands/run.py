@@ -40,7 +40,13 @@ def cmd_run(args):
     # Check for deprecated settings
     check_deprecated_description_cleaning(config)
 
-    year = config.get('year', 2025)
+    # Get report title (new) or year (deprecated)
+    title = config.get('title')
+    year = config.get('year')
+    if year and not title:
+        # Backwards compatibility: generate title from year
+        title = f"{year} Financial Report"
+
     data_sources = config.get('data_sources', [])
     rule_mode = config.get('rule_mode', 'first_match')
     transforms = get_transforms(config.get('_merchants_file'), match_mode=rule_mode)
@@ -62,7 +68,10 @@ def cmd_run(args):
         args.quiet = True
 
     if not args.quiet:
-        print(f"Tally - {year}")
+        if title:
+            print(f"Tally - {title}")
+        else:
+            print("Tally")
         print(f"Config: {config_dir}/{args.settings}")
         print()
 
@@ -184,18 +193,18 @@ def cmd_run(args):
         # Text summary only (no HTML)
         group_by = getattr(args, 'group_by', 'merchant')
         if stats.get('sections'):
-            print_sections_summary(stats, year=year, currency_format=currency_format, only_filter=only_filter)
+            print_sections_summary(stats, title=title, currency_format=currency_format, only_filter=only_filter)
         else:
-            print_summary(stats, year=year, currency_format=currency_format, group_by=group_by)
+            print_summary(stats, title=title, currency_format=currency_format, group_by=group_by)
     else:
         # HTML output (default)
         # Print summary first
         group_by = getattr(args, 'group_by', 'merchant')
         if not args.quiet:
             if stats.get('sections'):
-                print_sections_summary(stats, year=year, currency_format=currency_format, only_filter=only_filter)
+                print_sections_summary(stats, title=title, currency_format=currency_format, only_filter=only_filter)
             else:
-                print_summary(stats, year=year, currency_format=currency_format, group_by=group_by)
+                print_summary(stats, title=title, currency_format=currency_format, group_by=group_by)
 
         # Determine output path
         if args.output:
@@ -207,7 +216,7 @@ def cmd_run(args):
 
         # Collect source names for the report subtitle (exclude supplemental)
         source_names = [s.get('name', 'Unknown') for s in data_sources if not s.get('_supplemental', False)]
-        write_summary_file_vue(stats, output_path, year=year,
+        write_summary_file_vue(stats, output_path, title=title,
                                currency_format=currency_format, sources=source_names,
                                embedded_html=args.embedded_html)
         if not args.quiet:

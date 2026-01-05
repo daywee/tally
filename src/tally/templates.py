@@ -3,15 +3,14 @@ Starter template strings for tally init command.
 """
 
 STARTER_SETTINGS = '''# Tally Settings
-year: {year}
-title: "Spending Analysis {year}"
+title: "{year} Spending Analysis"
 
 # Data sources - add your statement files here
 # Run: tally inspect <file> to auto-detect the format string
 data_sources:
   # Example credit card CSV (positive amounts = purchases):
   # - name: Credit Card
-  #   file: data/card-{year}.csv
+  #   file: data/card.csv
   #   format: "{{date:%m/%d/%Y}},{{description}},{{amount}}"
   #
   # Amount modifiers:
@@ -20,7 +19,7 @@ data_sources:
   #   {{+amount}}  - Absolute value (mixed-sign sources like escrow accounts)
   #
   # - name: Checking
-  #   file: data/checking-{year}.csv
+  #   file: data/checking.csv
   #   format: "{{date:%Y-%m-%d}},{{description}},{{-amount}}"
 
 output_dir: output
