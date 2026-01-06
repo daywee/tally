@@ -211,6 +211,14 @@ def cmd_inspect(args):
             print(f"    {{-amount}}  - negate (flip sign)")
             print(f"    {{+amount}}  - absolute value")
 
+        # Detect currency symbol from amount column
+        currency_symbol = _detect_currency_symbol(filepath, spec.amount_column, has_header=True, dialect=dialect)
+        if currency_symbol:
+            print("\n" + "=" * 70)
+            print("Currency Detection:")
+            print("-" * 70)
+            print(f"  Detected currency symbol: {currency_symbol}")
+
     except ValueError as e:
         print(f"  Could not auto-detect: {e}")
         print("\n  Use a manual format string. Example:")
@@ -759,3 +767,46 @@ def _analyze_amount_column_detailed(filepath, amount_col, desc_col=1, has_header
         'sample_negative': sample_negative,
         'format_observations': format_observations,
     }
+
+
+def _detect_currency_symbol(filepath, amount_col=None, has_header=True, max_rows=500, dialect=None):
+    """
+    Detect currency symbol from the file by scanning the amount column.
+
+    Strips numbers, separators, and signs - whatever remains is likely the currency symbol.
+
+    Returns the detected symbol or None if no symbols found.
+    """
+    import re as re_mod
+
+    symbol_counts = {}
+
+    # Pattern to strip numbers, separators, signs, and whitespace
+    strip_pattern = re_mod.compile(r'[\d,.\-+()\s]')
+
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f, dialect) if dialect else csv.reader(f)
+            if has_header:
+                next(reader, None)  # Skip header
+
+            for i, row in enumerate(reader):
+                if i >= max_rows:
+                    break
+
+                if amount_col is not None and amount_col < len(row):
+                    val = row[amount_col]
+                    # Strip numbers and signs to find just the symbol
+                    remaining = strip_pattern.sub('', val).strip()
+                    if remaining:
+                        symbol_counts[remaining] = symbol_counts.get(remaining, 0) + 1
+
+    except Exception:
+        return None
+
+    # Return the most common symbol if found
+    if symbol_counts:
+        most_common = max(symbol_counts, key=symbol_counts.get)
+        return most_common
+
+    return None
