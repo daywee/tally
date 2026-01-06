@@ -686,7 +686,7 @@ class TestDetectCurrencySymbol:
 2024-01-02,Lunch,$25.00
 2024-01-03,Dinner,$45.99
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -703,7 +703,7 @@ class TestDetectCurrencySymbol:
 2024-01-02,Lunch,€25.00
 2024-01-03,Dinner,€45.99
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -719,7 +719,7 @@ class TestDetectCurrencySymbol:
 2024-01-01,Coffee,£12.50
 2024-01-02,Lunch,£25.00
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -735,7 +735,7 @@ class TestDetectCurrencySymbol:
 2024-01-01,Coffee,¥1250
 2024-01-02,Lunch,¥2500
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -752,7 +752,7 @@ class TestDetectCurrencySymbol:
 2024-01-02,Lunch,25.00
 2024-01-03,Dinner,45.99
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -769,7 +769,7 @@ class TestDetectCurrencySymbol:
 2024-01-02,Return,-$25.00
 2024-01-03,Credit,($45.99)
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -786,7 +786,7 @@ class TestDetectCurrencySymbol:
 2024-01-02,Lunch,25.00€
 2024-01-03,Dinner,45.99€
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -804,7 +804,7 @@ class TestDetectCurrencySymbol:
 2024-01-03,Dinner,$45.99
 2024-01-04,Euro,€10.00
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
@@ -821,7 +821,7 @@ class TestDetectCurrencySymbol:
 2024-01-02,Lunch,USD 25.00
 2024-01-03,Dinner,USD 45.99
 """
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as f:
             f.write(csv_content)
             tmpfile = f.name
 
