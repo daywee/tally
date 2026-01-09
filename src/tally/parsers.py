@@ -355,11 +355,24 @@ def auto_detect_csv_format(filepath):
         return any(p in header_lower for p in patterns)
 
     with open(filepath, 'r', encoding='utf-8') as f:
-        reader = csv.reader(f)
+        # Detect CSV dialect (delimiter, quotechar, etc.)
+        sample = f.read(4096)
+        f.seek(0)
+        try:
+            dialect = csv.Sniffer().sniff(sample)
+        except csv.Error:
+            dialect = None
+
+        reader = csv.reader(f, dialect) if dialect else csv.reader(f)
         headers = next(reader, None)
 
         if not headers:
             raise ValueError("CSV file is empty or has no headers")
+
+    # Determine delimiter for FormatSpec (None means comma/default)
+    detected_delimiter = None
+    if dialect and dialect.delimiter != ',':
+        detected_delimiter = dialect.delimiter
 
     # Find column indices
     date_col = desc_col = amount_col = None
@@ -392,5 +405,6 @@ def auto_detect_csv_format(filepath):
         date_format='%m/%d/%Y',  # Default format
         description_column=desc_col,
         amount_column=amount_col,
-        has_header=True
+        has_header=True,
+        delimiter=detected_delimiter,
     )
