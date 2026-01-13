@@ -296,7 +296,15 @@ const MerchantSection = defineComponent({
                                                 </span>
                                             </span>
                                             <span class="txn-date">{{ formatDate(txn.date) }}</span>
-                                            <span class="txn-desc"><span v-if="txn.source" class="txn-source" :class="txn.source.toLowerCase()">{{ txn.source }}</span> <span v-html="highlightDescription(txn.description)"></span></span>
+                                            <span class="txn-desc"><span v-if="txn.source" class="txn-source" :class="txn.source.toLowerCase()">{{ txn.source }}</span> <span v-html="highlightDescription(txn.description)"></span><span v-if="txn.original_description" class="transform-indicator" @click.stop="togglePopup($event)">✎
+                                                <span class="match-info-popup" @click.stop>
+                                                    <button class="popup-close" @click="closePopup($event)">&times;</button>
+                                                    <div class="popup-header">Original Description</div>
+                                                    <div class="popup-row">
+                                                        <span class="popup-value">{{ txn.original_description }}</span>
+                                                    </div>
+                                                </span>
+                                            </span></span>
                                             <span class="txn-badges">
                                                 <span v-for="tag in [...(txn.tags || [])].sort()"
                                                       :key="tag"

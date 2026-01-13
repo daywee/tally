@@ -692,6 +692,33 @@ tr.hidden {
 .tag-badge:hover {
     background: color-mix(in srgb, currentColor 30%, transparent);
 }
+.transform-indicator {
+    position: relative;
+    margin-left: 4px;
+    font-size: 0.7rem;
+    color: var(--accent-blue);
+    cursor: pointer;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    background: rgba(79, 172, 254, 0.15);
+    font-weight: 600;
+}
+.transform-indicator:hover {
+    background: rgba(79, 172, 254, 0.25);
+}
+.transform-indicator .match-info-popup {
+    min-width: 300px;
+    max-width: 500px;
+}
+.transform-indicator .match-info-popup .popup-header {
+    text-align: center;
+    padding-right: 0;
+    margin-bottom: 0.5em;
+}
+.transform-indicator .match-info-popup .popup-value {
+    word-break: break-word;
+    white-space: normal;
+}
 .tags-cell {
     max-width: 150px;
 }

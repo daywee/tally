@@ -1171,6 +1171,12 @@ class TransactionEvaluator:
                         self.evaluate(node.args[0]),
                         self.evaluate(node.args[1])
                     )
+                elif method_name == 'join':
+                    # "sep".join(list) - join list elements with separator
+                    if len(node.args) != 1:
+                        raise ExpressionError("join() requires 1 argument")
+                    items = self.evaluate(node.args[0])
+                    return obj.join(str(item) for item in items)
 
             raise ExpressionError(f"Unsupported method call: {method_name}")
 

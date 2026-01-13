@@ -100,7 +100,8 @@ def analyze_transactions(transactions):
         txn_data = {
             'date': txn['date'].strftime('%m/%d'),
             'month': month_key,
-            'description': txn.get('raw_description', txn['description']),
+            # Use transformed description if available, otherwise raw_description
+            'description': txn.get('description') if txn.get('original_description') else txn.get('raw_description', txn['description']),
             'amount': effective_amount,
             'source': txn['source'],
             'tags': txn.get('tags', [])
@@ -108,6 +109,9 @@ def analyze_transactions(transactions):
         # Include extra_fields from field: directives
         if txn.get('extra_fields'):
             txn_data['extra_fields'] = txn['extra_fields']
+        # Include original_description if transform was applied
+        if txn.get('original_description'):
+            txn_data['original_description'] = txn['original_description']
         by_merchant[txn['merchant']]['transactions'].append(txn_data)
         # Track max payment
         if effective_amount > by_merchant[txn['merchant']]['max_payment']:

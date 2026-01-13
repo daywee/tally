@@ -571,6 +571,9 @@ def normalize_merchant(
             # Include extra_fields from field: directives
             if result.extra_fields:
                 match_info['extra_fields'] = result.extra_fields
+            # Include transform_description if set
+            if result.transform_description:
+                match_info['transform_description'] = result.transform_description
             return (result.merchant, result.category, result.subcategory, match_info)
 
         # No categorization match - fallback to extract merchant name

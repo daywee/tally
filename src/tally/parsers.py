@@ -321,6 +321,10 @@ def parse_generic_csv(filepath, format_spec, rules, source_name='CSV',
             # Add extra_fields from field: directives in .rules files
             if match_info and match_info.get('extra_fields'):
                 txn['extra_fields'] = match_info['extra_fields']
+            # Apply transform_description if set
+            if match_info and match_info.get('transform_description'):
+                txn['original_description'] = txn.get('raw_description', txn.get('description', ''))
+                txn['description'] = match_info['transform_description']
             transactions.append(txn)
 
         except (ValueError, IndexError):

@@ -43,6 +43,7 @@ class MerchantRule:
     line_number: int = 0  # For error reporting
     let_bindings: List[Tuple[str, str]] = field(default_factory=list)  # [(var_name, expr), ...]
     fields: Dict[str, str] = field(default_factory=dict)  # {field_name: expr} extra fields to add
+    transform: str = ""  # Expression to transform the description
 
     def __post_init__(self):
         if not self.merchant:
@@ -80,6 +81,7 @@ class MatchResult:
     tag_rules: List[MerchantRule] = field(default_factory=list)  # Rules that contributed tags
     extra_fields: Dict[str, Any] = field(default_factory=dict)  # Evaluated fields from matching rule
     tag_sources: Dict[str, Dict] = field(default_factory=dict)  # {tag: {rule: name, pattern: expr}}
+    transform_description: str = ""  # Transformed description from transform: directive
 
 
 def calculate_specificity(rule: MerchantRule) -> Tuple[int, int, int, int]:
@@ -251,6 +253,8 @@ class MerchantEngine:
                     current_rule['subcategory'] = value
                 elif key == 'merchant':
                     current_rule['merchant'] = value
+                elif key == 'transform':
+                    current_rule['transform'] = value
                 elif key == 'tags':
                     # Parse comma-separated tags, but don't split inside parentheses
                     tags = set()
@@ -359,6 +363,7 @@ class MerchantEngine:
             line_number=line_number,
             let_bindings=let_bindings,
             fields=fields,
+            transform=rule_data.get('transform', ''),
         )
         self.rules.append(rule)
 
@@ -429,6 +434,25 @@ class MerchantEngine:
                 # If field evaluation fails, skip it
                 pass
         return evaluated
+
+    def _evaluate_transform(
+        self,
+        rule: MerchantRule,
+        transaction: Dict,
+        variables: Dict[str, Any],
+        data_sources: Optional[Dict] = None,
+    ) -> str:
+        """Evaluate transform expression for a matching rule.
+
+        Returns the transformed description string, or empty string on failure.
+        """
+        try:
+            result = expr_parser.evaluate_transaction(
+                rule.transform, transaction, variables=variables, data_sources=data_sources
+            )
+            return str(result) if result is not None else ""
+        except expr_parser.ExpressionError:
+            return ""
 
     def _resolve_tags(
         self,
@@ -582,6 +606,12 @@ class MerchantEngine:
                         rule, transaction, variables, data_sources
                     )
 
+                # Evaluate transform expression
+                if rule.transform:
+                    result.transform_description = self._evaluate_transform(
+                        rule, transaction, variables, data_sources
+                    )
+
                 # Collect tags from the winning categorization rule
                 if rule.tags:
                     resolved_tags = self._resolve_tags(rule, transaction, variables, data_sources)
@@ -611,6 +641,12 @@ class MerchantEngine:
                     # Evaluate extra fields for the category winner
                     if winner[0].fields:
                         result.extra_fields = self._evaluate_fields(
+                            winner[0], transaction, winner[2], data_sources
+                        )
+
+                    # Evaluate transform expression
+                    if winner[0].transform:
+                        result.transform_description = self._evaluate_transform(
                             winner[0], transaction, winner[2], data_sources
                         )
 

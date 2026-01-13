@@ -132,7 +132,8 @@ def write_summary_file_vue(stats, filepath, year=None, currency_format="${amount
                     'id': f"{merchant_id}_{i}",
                     'date': txn.get('date', ''),
                     'month': txn.get('month', ''),
-                    'description': txn.get('raw_description', txn.get('description', '')),
+                    # Use transformed description if available, otherwise raw_description
+                    'description': txn.get('description') if txn.get('original_description') else txn.get('raw_description', txn.get('description', '')),
                     'amount': txn.get('amount', 0),
                     'source': txn.get('source', ''),
 
@@ -141,6 +142,9 @@ def write_summary_file_vue(stats, filepath, year=None, currency_format="${amount
                 # Include extra_fields from field: directives
                 if txn.get('extra_fields'):
                     txn_json['extra_fields'] = txn['extra_fields']
+                # Include original_description if transform was applied
+                if txn.get('original_description'):
+                    txn_json['original_description'] = txn['original_description']
                 txns.append(txn_json)
 
             # Build match info for tooltip
