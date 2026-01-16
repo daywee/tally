@@ -494,7 +494,7 @@ def extract_merchant_name(description):
     cleaned = clean_description(description)
 
     # Remove non-alphabetic characters for grouping, keep first 2-3 words
-    words = re.sub(r'[^A-Za-z\s]', ' ', cleaned).split()[:3]
+    words = re.sub(r'[^\w\s]', ' ', cleaned, flags=re.UNICODE).split()[:3]
 
     if words:
         return ' '.join(words).title()
